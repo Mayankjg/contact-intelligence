@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  STAFF
+  VIEWER
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PurchaseStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceStatus {
+  PENDING
+  UPCOMING
+  DUE
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum FollowUpType {
+  PRODUCT_PURCHASE
+  GENERAL
+}
+
+model User {
+  id           String     @id @default(uuid())
+  username     String?    @unique
+  firstName    String
+  lastName     String
+  email        String     @unique
+  phone        String?    @unique
+  passwordHash String
+  role         Role       @default(STAFF)
+  status       UserStatus @default(ACTIVE)
+
+  contacts Contact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id             String       @id @default(uuid())
+  firstName      String
+  lastName       String
+  phone          String
+  email          String?
+  alternatePhone String?
+  company        String?
+
+  customerType CustomerType  @default(INDIVIDUAL)
+  status       ContactStatus @default(ACTIVE)
+
+  address    String?
+  city       String?
+  state      String?
+  country    String?
+  postalCode String?
+  notes      String?
+
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  purchases Purchase[]
+  services  CustomerService[]
+  followUps PurchaseFollowUp[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([phone])
+  @@index([email])
+  @@index([lastName])
+  @@index([status])
+  @@index([ownerId])
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  sku         String        @unique
+  description String?
+  price       Decimal       @db.Decimal(12, 2)
+  stock       Int           @default(0)
+  status      ProductStatus @default(ACTIVE)
+  category    String?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  services ProductService[]
+  items    PurchaseItem[]
+}
+
+model ProductService {
+  id                String   @id @default(cuid())
+
+  productId         String
+
+  name              String
+
+  description       String?
+
+  daysAfterPurchase Int      @default(0)
+
+  durationMinutes   Int      @default(30)
+
+  isActive          Boolean  @default(true)
+
+  createdAt         DateTime @default(now())
+
+  updatedAt         DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerServices CustomerService[]
+
+  @@index([productId])
+  @@index([isActive])
+}
+
+model Purchase {
+  id             String         @id @default(cuid())
+  purchaseNumber String         @unique
+  contactId      String
+  purchaseDate   DateTime       @default(now())
+
+  subtotal    Decimal @db.Decimal(12, 2)
+  discount    Decimal @default(0) @db.Decimal(12, 2)
+  totalAmount Decimal @db.Decimal(12, 2)
+
+  status PurchaseStatus @default(ACTIVE)
+  notes  String?
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  items    PurchaseItem[]
+  services CustomerService[]
+  followUps PurchaseFollowUp[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contactId])
+  @@index([purchaseDate])
+  @@index([status])
+}
+
+model PurchaseItem {
+  id         String @id @default(cuid())
+  purchaseId String
+  productId  String
+
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(12, 2)
+  totalPrice Decimal @db.Decimal(12, 2)
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([purchaseId])
+  @@index([productId])
+}
+
+model CustomerService {
+  id               String @id @default(cuid())
+  contactId        String
+  purchaseId       String
+  productServiceId String?
+
+  serviceName String
+
+  scheduledDate DateTime
+  completedDate DateTime?
+
+  status ServiceStatus @default(PENDING)
+
+  notes String?
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  productService ProductService? @relation(fields: [productServiceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contactId])
+  @@index([purchaseId])
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model PurchaseFollowUp {
+  id String @id @default(cuid())
+
+  contactId  String
+  purchaseId String?
+  productId  String?
+
+  title       String
+  description String?
+
+  followUpDate DateTime
+  reminderDate DateTime?
+
+  status FollowUpStatus @default(PENDING)
+  type   FollowUpType   @default(PRODUCT_PURCHASE)
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  purchase Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contactId])
+  @@index([followUpDate])
+  @@index([status])
+}

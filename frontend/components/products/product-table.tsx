@@ -188,8 +188,14 @@ export default function ProductTable({
           </thead>
 
           <tbody>
-            {products.map((product) => (
-              <tr
+            {products.map((product) => {
+              const status =
+                product.stock > 0
+                  ? 'ACTIVE'
+                  : 'INACTIVE';
+
+              return (
+                <tr
                 key={product.id}
                 className="border-b last:border-0 hover:bg-slate-50"
               >
@@ -219,12 +225,12 @@ export default function ProductTable({
                 <td className="px-6 py-4">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      product.status === 'INACTIVE'
+                      status === 'INACTIVE'
                         ? 'bg-red-50 text-red-700'
                         : 'bg-emerald-50 text-emerald-700'
                     }`}
                   >
-                    {product.status}
+                    {status}
                   </span>
                 </td>
 
@@ -261,7 +267,8 @@ export default function ProductTable({
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

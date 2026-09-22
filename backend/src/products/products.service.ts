@@ -213,6 +213,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { ProductStatus } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateProductDto } from './dto/create-product.dto';
@@ -249,7 +251,10 @@ export class ProductsService {
           description: dto.description,
           price: dto.price,
           stock: dto.stock,
-          status: dto.status,
+          status:
+            dto.stock > 0
+              ? ProductStatus.ACTIVE
+              : ProductStatus.INACTIVE,
           category: dto.category,
         },
       });
@@ -381,7 +386,11 @@ export class ProductsService {
     id: string,
     dto: UpdateProductDto,
   ) {
-    await this.findById(id);
+    const existingResponse =
+      await this.findById(id);
+
+    const existing =
+      existingResponse.data;
 
     if (dto.sku) {
       const duplicate =
@@ -402,13 +411,40 @@ export class ProductsService {
       }
     }
 
+    const stockToAdd =
+      dto.stock;
+
+    const productData = {
+      ...dto,
+    };
+
+    delete productData.stock;
+    delete productData.status;
+
+    const updatedStock =
+      existing.stock +
+      (stockToAdd ?? 0);
+
     const product =
       await this.prisma.product.update({
         where: {
           id,
         },
 
-        data: dto,
+        data: {
+          ...productData,
+          ...(stockToAdd === undefined
+            ? {}
+            : {
+                stock: {
+                  increment: stockToAdd,
+                },
+              }),
+          status:
+            updatedStock > 0
+              ? ProductStatus.ACTIVE
+              : ProductStatus.INACTIVE,
+        },
       });
 
     return {

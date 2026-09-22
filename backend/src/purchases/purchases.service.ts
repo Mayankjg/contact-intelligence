@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { ProductStatus } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -182,9 +184,21 @@ export class PurchasesService {
                     purchaseItems,
                 },
               },
-            });
+          });
 
           for (const item of dto.items) {
+            const product =
+              products.find(
+                (p) =>
+                  p.id === item.productId,
+              );
+
+            if (!product) {
+              throw new BadRequestException(
+                'Product not found',
+              );
+            }
+
             await tx.product.update({
               where: {
                 id: item.productId,
@@ -195,6 +209,12 @@ export class PurchasesService {
                   decrement:
                     item.quantity,
                 },
+                status:
+                  product.stock -
+                    item.quantity >
+                  0
+                    ? ProductStatus.ACTIVE
+                    : ProductStatus.INACTIVE,
               },
             });
           }

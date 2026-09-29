@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsDateString,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -9,6 +10,7 @@ import {
 } from 'class-validator';
 
 import { Type } from 'class-transformer';
+import { PaymentStatus } from '@prisma/client';
 
 export class CreatePurchaseItemDto {
   @IsString()
@@ -47,4 +49,8 @@ export class CreatePurchaseDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  paymentStatus?: PaymentStatus;
 }

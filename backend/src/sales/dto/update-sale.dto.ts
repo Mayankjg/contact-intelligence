@@ -1,7 +1,11 @@
 import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
-import { PurchaseStatus } from '@prisma/client';
+import { PaymentStatus, PurchaseStatus } from '@prisma/client';
 
 export class UpdateSaleDto {
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  paymentStatus?: PaymentStatus;
+
   @IsOptional()
   @IsEnum(PurchaseStatus)
   status?: PurchaseStatus;

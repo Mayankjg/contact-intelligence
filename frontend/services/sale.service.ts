@@ -38,7 +38,7 @@ export const saleService = {
 
   async updateSale(
     id: string,
-    data: { status?: Sale['status']; saleDate?: string; notes?: string },
+    data: { status?: Sale['status']; paymentStatus?: Sale['paymentStatus']; saleDate?: string; notes?: string },
   ) {
     return apiRequest<{ success: boolean; data: Sale }>(`/sales/${id}`, {
       method: 'PATCH',

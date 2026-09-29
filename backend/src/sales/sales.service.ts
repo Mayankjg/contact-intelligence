@@ -20,6 +20,7 @@ export class SalesService {
       items: dto.items,
       discount: dto.discount,
       notes: dto.notes,
+      paymentStatus: dto.paymentStatus,
     });
   }
 
@@ -42,6 +43,7 @@ export class SalesService {
       status: dto.status,
       purchaseDate: dto.saleDate,
       notes: dto.notes,
+      paymentStatus: dto.paymentStatus,
     });
   }
 

@@ -45,6 +45,9 @@ export default function PurchaseHistory({
                       purchase.purchaseDate,
                     )}
                   </p>
+                  <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${purchase.paymentStatus === 'PAID' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                    {purchase.paymentStatus === 'PAID' ? 'Paid' : 'Unpaid'}
+                  </span>
                 </div>
 
                 <p className="font-semibold text-slate-900">

@@ -82,3 +82,38 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #purchase-invoice,
+  #purchase-invoice * {
+    visibility: visible !important;
+  }
+
+  #purchase-invoice {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .payment-status-print {
+    display: block !important;
+  }
+}

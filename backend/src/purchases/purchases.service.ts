@@ -29,7 +29,7 @@ export class PurchasesService {
           Math.random() * 9000,
       );
 
-    return `PUR-${timestamp}-${random}`;
+    return `INV-${timestamp}-${random}`;
   }
 
   async create(
@@ -176,6 +176,8 @@ export class PurchasesService {
                 discount,
 
                 totalAmount,
+
+                paymentStatus: dto.paymentStatus,
 
                 notes: dto.notes,
 

@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/utils';
 export default function SaleForm({ contacts, products, onSubmit, submitting }: { contacts: Contact[]; products: Product[]; onSubmit: (data: CreateSalePayload) => Promise<void>; submitting?: boolean }) {
   const [contactId, setContactId] = useState('');
   const [saleDate, setSaleDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentStatus, setPaymentStatus] = useState<'PAID' | 'UNPAID'>('UNPAID');
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState([{ productId: '', quantity: 1, unitPrice: 0 }]);
@@ -22,12 +23,13 @@ export default function SaleForm({ contacts, products, onSubmit, submitting }: {
   const removeItem = (index: number) => setItems((current) => current.filter((_, i) => i !== index));
 
   return (
-    <form onSubmit={async (e) => { e.preventDefault(); await onSubmit({ contactId, saleDate, discount, notes, items }); }} className="space-y-6">
+    <form onSubmit={async (e) => { e.preventDefault(); await onSubmit({ contactId, saleDate, paymentStatus, discount, notes, items }); }} className="space-y-6">
       <section className="rounded-2xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-slate-900">Customer & Sale</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">Customer<select required value={contactId} onChange={(e) => setContactId(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5"><option value="">Select customer</option>{contacts.map((c) => <option key={c.id} value={c.id}>{c.firstName} {c.lastName} — {c.phone}</option>)}</select></label>
           <label className="text-sm font-medium text-slate-700">Sale date<input required type="date" value={saleDate} onChange={(e) => setSaleDate(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5" /></label>
+          <label className="text-sm font-medium text-slate-700">Payment status<select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as 'PAID' | 'UNPAID')} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5"><option value="UNPAID">Unpaid</option><option value="PAID">Paid</option></select></label>
         </div>
       </section>
 

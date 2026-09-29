@@ -31,6 +31,18 @@
 $ npm install
 ```
 
+### Configure the database
+
+The API requires PostgreSQL. Copy `.env.example` to `.env`, set `DATABASE_URL` to a running PostgreSQL database, then apply the Prisma migrations:
+
+```bash
+# Windows PowerShell
+Copy-Item .env.example .env
+npx prisma migrate dev
+```
+
+Edit `.env` before starting the API. For a local database, the URL format is `postgresql://USER:PASSWORD@localhost:5432/DATABASE?schema=public`. The database must exist and PostgreSQL must be running. Keep `.env` private; it is gitignored.
+
 ## Compile and run the project
 
 ```bash

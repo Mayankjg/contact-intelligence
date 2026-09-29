@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -7,6 +8,10 @@ import {
 import { PurchaseStatus } from '@prisma/client';
 
 export class UpdatePurchaseDto {
+  @IsOptional()
+  @IsDateString()
+  purchaseDate?: string;
+
   @IsOptional()
   @IsEnum(PurchaseStatus)
   status?: PurchaseStatus;

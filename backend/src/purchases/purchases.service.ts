@@ -117,7 +117,7 @@ export class PurchasesService {
         }
 
         const unitPrice =
-          Number(product.price);
+          item.unitPrice ?? Number(product.price);
 
         const totalPrice =
           unitPrice *
@@ -278,6 +278,8 @@ export class PurchasesService {
 
   async findAll(params?: {
     contactId?: string;
+    search?: string;
+    date?: string;
     page?: number;
     limit?: number;
   }) {
@@ -297,7 +299,25 @@ export class PurchasesService {
         params.contactId;
     }
 
-    const [purchases, total] =
+    if (params?.search?.trim()) {
+      const search = params.search.trim();
+      where.contact = {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    if (params?.date) {
+      const start = new Date(`${params.date}T00:00:00.000Z`);
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 1);
+      where.purchaseDate = { gte: start, lt: end };
+    }
+
+    const [purchases, total, amount] =
       await Promise.all([
         this.prisma.purchase.findMany({
           where,
@@ -332,12 +352,21 @@ export class PurchasesService {
         this.prisma.purchase.count({
           where,
         }),
+
+        this.prisma.purchase.aggregate({
+          where,
+          _sum: { totalAmount: true },
+        }),
       ]);
 
     return {
       success: true,
 
       data: purchases,
+
+      summary: {
+        totalAmount: Number(amount._sum.totalAmount ?? 0),
+      },
 
       meta: {
         total,

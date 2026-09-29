@@ -7,37 +7,21 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-
 import { Type } from 'class-transformer';
+import { CreateSaleItemDto } from './create-sale-item.dto';
 
-export class CreatePurchaseItemDto {
-  @IsString()
-  productId!: string;
-
-  @IsNumber()
-  @Min(1)
-  quantity!: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  unitPrice?: number;
-}
-
-export class CreatePurchaseDto {
+export class CreateSaleDto {
   @IsString()
   contactId!: string;
 
   @IsOptional()
   @IsDateString()
-  purchaseDate?: string;
+  saleDate?: string;
 
   @IsArray()
-  @ValidateNested({
-    each: true,
-  })
-  @Type(() => CreatePurchaseItemDto)
-  items!: CreatePurchaseItemDto[];
+  @ValidateNested({ each: true })
+  @Type(() => CreateSaleItemDto)
+  items!: CreateSaleItemDto[];
 
   @IsOptional()
   @IsNumber()

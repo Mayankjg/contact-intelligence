@@ -535,8 +535,6 @@ import {
   BellRing,
 } from 'lucide-react';
 
-import Link from 'next/link';
-
 import { contactService } from '@/services/contact.service';
 
 import { serviceService } from '@/services/service.service';
@@ -555,6 +553,7 @@ import UpcomingServices from '@/components/dashboard/upcoming-services';
 import UpcomingFollowUps from '@/components/dashboard/upcoming-followups';
 
 import StatCard from '@/components/dashboard/stat-card';
+import ExportReport from '@/components/dashboard/export-report';
 
 export default function DashboardPage() {
   const [contacts, setContacts] =
@@ -659,21 +658,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex gap-3">
-          <Link
-            href="/contacts"
-            className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
-          >
-            View Contacts
-          </Link>
-
-          <Link
-            href="/products"
-            className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            View Products
-          </Link>
-        </div>
+        <ExportReport />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">

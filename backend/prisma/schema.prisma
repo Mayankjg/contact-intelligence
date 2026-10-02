@@ -47,6 +47,11 @@ enum PaymentStatus {
   UNPAID
 }
 
+enum StockMovementType {
+  INWARD
+  OUTWARD
+}
+
 enum ServiceStatus {
   PENDING
   UPCOMING
@@ -135,6 +140,23 @@ model Product {
 
   services ProductService[]
   items    PurchaseItem[]
+  stockMovements StockMovement[]
+}
+
+model StockMovement {
+  id         String            @id @default(cuid())
+  productId  String
+  type       StockMovementType
+  quantity   Int
+  stockBefore Int
+  stockAfter  Int
+  notes      String?
+  createdAt  DateTime          @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId, createdAt])
+  @@index([type, createdAt])
 }
 
 model ProductService {

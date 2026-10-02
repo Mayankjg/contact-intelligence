@@ -558,6 +558,7 @@ import {
   Package,
   ShoppingCart,
   ChevronRight,
+  ArrowDownUp,
 } from 'lucide-react';
 
 const menuItems = [
@@ -572,7 +573,7 @@ const menuItems = [
     icon: Users,
   },
   {
-    label: 'Products',
+    label: 'Purchase',
     href: '/products',
     icon: Package,
   },
@@ -580,6 +581,11 @@ const menuItems = [
     label: 'Sales',
     href: '/sales',
     icon: ShoppingCart,
+  },
+  {
+    label: 'Stock',
+    href: '/stock',
+    icon: ArrowDownUp,
   },
 ];
 

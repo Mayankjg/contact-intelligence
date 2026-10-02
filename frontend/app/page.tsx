@@ -564,6 +564,8 @@ export default function DashboardPage() {
 
   const [followUps, setFollowUps] =
     useState<any[]>([]);
+  const [pendingFollowUpCount, setPendingFollowUpCount] =
+    useState(0);
 
   const [contactCount, setContactCount] =
     useState(0);
@@ -618,9 +620,13 @@ export default function DashboardPage() {
         }
 
         if (followUpResult.status === 'fulfilled') {
+          const pendingFollowUps = followUpResult.value.data.filter(
+            (followUp) => followUp.status === 'PENDING',
+          );
+          setPendingFollowUpCount(pendingFollowUps.length);
           setFollowUps(
             getUpcomingFollowUps(
-              followUpResult.value.data,
+              pendingFollowUps,
             ),
           );
         }
@@ -638,6 +644,13 @@ export default function DashboardPage() {
     }
 
     loadDashboard();
+
+    window.addEventListener('focus', loadDashboard);
+    const refreshId = window.setInterval(loadDashboard, 60_000);
+    return () => {
+      window.removeEventListener('focus', loadDashboard);
+      window.clearInterval(refreshId);
+    };
   }, []);
 
   return (
@@ -685,7 +698,7 @@ export default function DashboardPage() {
 
         <StatCard
           title="Pending Follow-ups"
-          value={followUps.length}
+          value={pendingFollowUpCount}
           description="Future customer purchases"
           icon={BellRing}
         />

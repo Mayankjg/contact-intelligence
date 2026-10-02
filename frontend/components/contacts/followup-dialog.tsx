@@ -39,6 +39,9 @@ export default function FollowUpDialog({
   const [reminderDate, setReminderDate] =
     useState('');
 
+  const toIso = (value: string) =>
+    value ? new Date(value).toISOString() : '';
+
   const [loading, setLoading] =
     useState(false);
 
@@ -54,8 +57,8 @@ export default function FollowUpDialog({
         contactId,
         title,
         description,
-        followUpDate,
-        reminderDate,
+        followUpDate: toIso(followUpDate),
+        reminderDate: reminderDate ? toIso(reminderDate) : undefined,
         type: 'PRODUCT_PURCHASE',
       });
 
@@ -114,7 +117,7 @@ export default function FollowUpDialog({
 
             <input
               required
-              type="date"
+              type="datetime-local"
               value={followUpDate}
               onChange={(e) =>
                 setFollowUpDate(
@@ -131,7 +134,7 @@ export default function FollowUpDialog({
             </label>
 
             <input
-              type="date"
+              type="datetime-local"
               value={reminderDate}
               onChange={(e) =>
                 setReminderDate(

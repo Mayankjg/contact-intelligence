@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -14,6 +15,14 @@ export class FollowupsService {
   constructor(
     private readonly prisma: PrismaService,
   ) {}
+
+  private parseScheduledDate(value: string, field: string) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) {
+      throw new BadRequestException(`${field} must be a valid date and time`);
+    }
+    return date;
+  }
 
   async create(
     dto: CreateFollowUpDto,
@@ -46,16 +55,11 @@ export class FollowupsService {
           type:
             dto.type ?? 'GENERAL',
 
-          followUpDate:
-            new Date(
-              dto.followUpDate,
-            ),
+          followUpDate: this.parseScheduledDate(dto.followUpDate, 'followUpDate'),
 
           reminderDate:
             dto.reminderDate
-              ? new Date(
-                  dto.reminderDate,
-                )
+              ? this.parseScheduledDate(dto.reminderDate, 'reminderDate')
               : undefined,
 
         },
@@ -162,16 +166,12 @@ export class FollowupsService {
 
             followUpDate:
               dto.followUpDate
-                ? new Date(
-                    dto.followUpDate,
-                  )
+                ? this.parseScheduledDate(dto.followUpDate, 'followUpDate')
                 : undefined,
 
             reminderDate:
               dto.reminderDate
-                ? new Date(
-                    dto.reminderDate,
-                  )
+                ? this.parseScheduledDate(dto.reminderDate, 'reminderDate')
                 : undefined,
 
             status:

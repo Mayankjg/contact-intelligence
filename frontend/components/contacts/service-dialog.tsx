@@ -30,8 +30,11 @@ export default function ServiceDialog({
 }: ServiceDialogProps) {
   const [date, setDate] =
     useState(
-      service.scheduledDate
-        ?.split('T')[0] || '',
+      service.scheduledDate ? (() => {
+        const value = new Date(service.scheduledDate);
+        const local = new Date(value.getTime() - value.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 16);
+      })() : '',
     );
 
   const [notes, setNotes] =
@@ -49,7 +52,7 @@ export default function ServiceDialog({
       setLoading(true);
 
       await onSubmit({
-        scheduledDate: date,
+        scheduledDate: date ? new Date(date).toISOString() : undefined,
         notes,
       });
 
@@ -85,7 +88,7 @@ export default function ServiceDialog({
             </label>
 
             <input
-              type="date"
+              type="datetime-local"
               value={date}
               onChange={(e) =>
                 setDate(e.target.value)

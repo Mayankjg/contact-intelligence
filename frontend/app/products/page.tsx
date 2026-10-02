@@ -429,6 +429,7 @@ export default function ProductsPage() {
 
   const [editingProduct, setEditingProduct] =
     useState<Product | null>(null);
+  const [actionError, setActionError] = useState('');
 
   const {
     products,
@@ -462,6 +463,7 @@ export default function ProductsPage() {
   const remove = async (
     product: Product,
   ) => {
+    setActionError('');
     const confirmed =
       window.confirm(
         `Delete ${product.name}?`,
@@ -471,7 +473,15 @@ export default function ProductsPage() {
       return;
     }
 
-    await deleteProduct(product.id);
+    try {
+      await deleteProduct(product.id);
+    } catch (cause) {
+      setActionError(
+        cause instanceof Error
+          ? cause.message
+          : 'Unable to delete this product.',
+      );
+    }
   };
 
   return (
@@ -517,6 +527,12 @@ export default function ProductsPage() {
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {actionError && (
+        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {actionError}
         </div>
       )}
 

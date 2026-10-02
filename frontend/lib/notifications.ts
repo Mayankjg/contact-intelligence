@@ -20,28 +20,8 @@ export interface DashboardNotification {
   isOverdue: boolean;
 }
 
-function startOfDay(value: string | Date) {
-  const date = new Date(value);
-
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
-}
-
-function compareCalendarDay(
-  value: string | Date,
-  reference = new Date(),
-) {
-  const itemDay = startOfDay(value).getTime();
-  const refDay = startOfDay(reference).getTime();
-
-  if (itemDay === refDay) {
-    return 0;
-  }
-
-  return itemDay < refDay ? -1 : 1;
+function isDue(value: string | Date, reference = new Date()) {
+  return new Date(value).getTime() <= reference.getTime();
 }
 
 function getCustomerName(contact?: {
@@ -71,12 +51,12 @@ export function buildServiceNotifications(
     )
     .reduce<DashboardNotification[]>(
       (notifications, service) => {
-      const dayComparison = compareCalendarDay(
+      const due = isDue(
         service.scheduledDate,
         reference,
       );
 
-      if (dayComparison > 0) {
+      if (!due) {
         return notifications;
       }
 
@@ -91,12 +71,12 @@ export function buildServiceNotifications(
         type: 'service',
         title: service.serviceName,
         message: productName
-          ? `${customerName} needs ${service.serviceName} for ${productName}.`
-          : `${customerName} needs ${service.serviceName} today.`,
+          ? `${customerName} has ${service.serviceName} scheduled for ${productName}.`
+          : `${customerName} has a ${service.serviceName} service scheduled.`,
         customerName,
         href: `/contacts/${service.contactId}`,
         dueDate: service.scheduledDate,
-        isOverdue: dayComparison < 0,
+        isOverdue: new Date(service.scheduledDate).getTime() < reference.getTime(),
       });
 
       return notifications;
@@ -122,42 +102,37 @@ export function buildFollowUpNotifications(
       const notifications: DashboardNotification[] =
         [];
 
-      const followUpComparison = compareCalendarDay(
+      const followUpDue = isDue(
         followUp.followUpDate,
         reference,
       );
 
-      if (followUpComparison <= 0) {
+      if (followUpDue) {
         notifications.push({
           id: `followup-${followUp.id}`,
           type: 'followup',
           title: followUp.title,
-          message: `${customerName} has a follow-up scheduled today.`,
+          message: `${customerName} has a follow-up due.`,
           customerName,
           href: `/contacts/${followUp.contactId}`,
           dueDate: followUp.followUpDate,
-          isOverdue: followUpComparison < 0,
+          isOverdue: new Date(followUp.followUpDate).getTime() < reference.getTime(),
         });
       }
 
       if (followUp.reminderDate) {
-        const reminderComparison =
-          compareCalendarDay(
-            followUp.reminderDate,
-            reference,
-          );
+        const reminderDue = isDue(followUp.reminderDate, reference);
 
-        if (reminderComparison <= 0) {
+        if (reminderDue) {
           notifications.push({
             id: `reminder-${followUp.id}`,
             type: 'reminder',
             title: followUp.title,
-            message: `${customerName} has a reminder due for this follow-up.`,
+            message: `${customerName} has a follow-up reminder due.`,
             customerName,
             href: `/contacts/${followUp.contactId}`,
             dueDate: followUp.reminderDate,
-            isOverdue:
-              reminderComparison < 0,
+            isOverdue: new Date(followUp.reminderDate).getTime() < reference.getTime(),
           });
         }
       }
@@ -174,7 +149,7 @@ export function buildActivityNotifications(
   const newContacts = contacts
     .filter(
       (contact) =>
-        compareCalendarDay(contact.createdAt, reference) === 0,
+        new Date(contact.createdAt).toDateString() === reference.toDateString(),
     )
     .map((contact) => {
       const customerName = getCustomerName(contact);
@@ -194,7 +169,7 @@ export function buildActivityNotifications(
   const newProducts = products
     .filter(
       (product) =>
-        compareCalendarDay(product.createdAt, reference) === 0,
+        new Date(product.createdAt).toDateString() === reference.toDateString(),
     )
     .map((product) => ({
       id: `product-${product.id}`,
@@ -241,10 +216,7 @@ export function getUpcomingServices(
       (service) =>
         service.status !== 'COMPLETED' &&
         service.status !== 'CANCELLED' &&
-        compareCalendarDay(
-          service.scheduledDate,
-          now,
-        ) >= 0,
+        new Date(service.scheduledDate).getTime() >= now.getTime(),
     )
     .sort(
       (left, right) =>
@@ -265,10 +237,7 @@ export function getUpcomingFollowUps(
       (followUp) =>
         followUp.status !== 'COMPLETED' &&
         followUp.status !== 'CANCELLED' &&
-        compareCalendarDay(
-          followUp.followUpDate,
-          now,
-        ) >= 0,
+        new Date(followUp.followUpDate).getTime() >= now.getTime(),
     )
     .sort(
       (left, right) =>

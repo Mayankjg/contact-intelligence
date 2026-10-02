@@ -173,7 +173,7 @@ import {
   getStoredActionNotifications,
   NOTIFICATIONS_UPDATED_EVENT,
 } from '@/lib/notification-events';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import { followupService } from '@/services/followup.service';
 import { serviceService } from '@/services/service.service';
 import { contactService } from '@/services/contact.service';
@@ -193,6 +193,12 @@ export default function Navbar() {
     useState<DashboardNotification | null>(null);
   const containerRef =
     useRef<HTMLDivElement>(null);
+  const notificationDataRef = useRef<{
+    services: Awaited<ReturnType<typeof serviceService.getServices>>['data'];
+    followUps: Awaited<ReturnType<typeof followupService.getFollowUps>>['data'];
+    contacts: Awaited<ReturnType<typeof contactService.getContacts>>['data'];
+    products: Awaited<ReturnType<typeof productService.getProducts>>['data'];
+  }>({ services: [], followUps: [], contacts: [], products: [] });
 
   useEffect(() => {
     const savedUser = window.localStorage.getItem('contactiq_user');
@@ -223,7 +229,7 @@ export default function Navbar() {
         ] = await Promise.all([
           serviceService.getServices({
             page: 1,
-            limit: 100,
+            limit: 1000,
           }),
           followupService.getFollowUps({
             status: 'PENDING',
@@ -240,28 +246,13 @@ export default function Navbar() {
           }),
         ]);
 
-        const dismissedIds =
-          getDismissedNotificationIds();
-        const dueNotifications = [
-          ...getStoredActionNotifications(),
-          ...sortNotifications([
-            ...buildServiceNotifications(
-              serviceResponse.data,
-            ),
-            ...buildFollowUpNotifications(
-              followUpResponse.data,
-            ),
-            ...buildActivityNotifications(
-              contactResponse.data,
-              productResponse.data,
-            ),
-          ]),
-        ].filter(
-          (notification) =>
-            !dismissedIds.has(notification.id),
-        );
-
-        setNotifications(dueNotifications);
+        notificationDataRef.current = {
+          services: serviceResponse.data,
+          followUps: followUpResponse.data,
+          contacts: contactResponse.data,
+          products: productResponse.data,
+        };
+        updateDueNotifications();
       } catch (error) {
         console.error(
           'Failed to load notifications:',
@@ -272,6 +263,11 @@ export default function Navbar() {
 
     loadNotifications();
 
+    const dueCheckId = window.setInterval(
+      updateDueNotifications,
+      1_000,
+    );
+
     const refreshId = window.setInterval(
       loadNotifications,
       60_000,
@@ -279,8 +275,41 @@ export default function Navbar() {
 
     return () => {
       window.clearInterval(refreshId);
+      window.clearInterval(dueCheckId);
     };
   }, []);
+
+  function updateDueNotifications() {
+    const { services, followUps, contacts, products } = notificationDataRef.current;
+    const dueItems = sortNotifications([
+      ...buildServiceNotifications(services),
+      ...buildFollowUpNotifications(followUps),
+      ...buildActivityNotifications(contacts, products),
+    ]);
+    const dismissedIds = getDismissedNotificationIds();
+    const dueIds = new Set(dueItems.map((item) => item.id));
+    const firedKey = 'contactiq_fired_due_notifications';
+    let firedIds = new Set<string>();
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(firedKey) || '[]');
+      if (Array.isArray(saved)) firedIds = new Set(saved.filter((id): id is string => typeof id === 'string'));
+    } catch { /* Ignore malformed browser storage. */ }
+
+    const newlyDue = dueItems.filter((item) => !firedIds.has(`${item.id}@${item.dueDate}`) && !dismissedIds.has(item.id));
+    for (const item of newlyDue) {
+      firedIds.add(`${item.id}@${item.dueDate}`);
+      setLatestAction(item);
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(item.title, { body: item.message, tag: item.id });
+      }
+    }
+    window.localStorage.setItem(firedKey, JSON.stringify([...firedIds].slice(-500)));
+
+    setNotifications([
+      ...getStoredActionNotifications(),
+      ...dueItems,
+    ].filter((item) => !dismissedIds.has(item.id)));
+  }
 
   useEffect(() => {
     function handleNotificationUpdate(event: Event) {
@@ -420,9 +449,12 @@ export default function Navbar() {
           >
             <button
               type="button"
-              onClick={() =>
-                setIsOpen(!isOpen)
-              }
+              onClick={() => {
+                setIsOpen(!isOpen);
+                if ('Notification' in window && Notification.permission === 'default') {
+                  void Notification.requestPermission();
+                }
+              }}
               className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
             >
               <Bell className="h-5 w-5" />
@@ -521,8 +553,8 @@ export default function Navbar() {
 
                                 <span>
                                   {notification.isOverdue
-                                    ? `Overdue since ${formatDate(notification.dueDate)}`
-                                    : `Due ${formatDate(notification.dueDate)}`}
+                                    ? `Overdue since ${formatDateTime(notification.dueDate)}`
+                                    : `Due ${formatDateTime(notification.dueDate)}`}
                                 </span>
                               </div>
                             </div>

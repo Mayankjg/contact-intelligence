@@ -16,6 +16,14 @@ export class CustomerServicesService {
     private readonly prisma: PrismaService,
   ) {}
 
+  private parseScheduledDate(value: string, field: string) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) {
+      throw new BadRequestException(`${field} must be a valid date and time`);
+    }
+    return date;
+  }
+
   async create(dto: CreateCustomerServiceDto) {
     const [contact, purchase, template] = await Promise.all([
       this.prisma.contact.findUnique({ where: { id: dto.contactId } }),
@@ -51,7 +59,7 @@ export class CustomerServicesService {
         purchaseId: dto.purchaseId,
         productServiceId: dto.productServiceId,
         serviceName: dto.serviceName,
-        scheduledDate: new Date(dto.scheduledDate),
+        scheduledDate: this.parseScheduledDate(dto.scheduledDate, 'scheduledDate'),
         status: dto.status ?? 'PENDING',
         notes: dto.notes,
       },
@@ -153,7 +161,7 @@ export class CustomerServicesService {
       data: {
         ...dto,
         scheduledDate: dto.scheduledDate
-          ? new Date(dto.scheduledDate)
+          ? this.parseScheduledDate(dto.scheduledDate, 'scheduledDate')
           : undefined,
         completedDate: dto.completedDate
           ? new Date(dto.completedDate)

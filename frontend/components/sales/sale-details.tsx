@@ -53,7 +53,7 @@ export default function SaleDetails({ sale, onPaymentStatusChange, savingPayment
               </select>
               {savingPaymentStatus && <span className="text-xs text-slate-500">Saving…</span>}
             </div>
-            <div className="payment-status-print mt-3 hidden text-sm"><strong>Payment status:</strong> {sale.paymentStatus === 'PAID' ? 'Paid' : 'Unpaid'}</div>
+            <div className="payment-status-print invoice-download-hidden mt-3 hidden text-sm"><strong>Payment status:</strong> {sale.paymentStatus === 'PAID' ? 'Paid' : 'Unpaid'}</div>
           </section>
         </div>
 
@@ -68,7 +68,7 @@ export default function SaleDetails({ sale, onPaymentStatusChange, savingPayment
                   : items.map((item) => <tr key={item.id} className="text-slate-700"><td className="border border-slate-200 px-3 py-3"><span className="font-medium text-slate-900">{item.product?.name || 'Product'}</span><span className="block text-xs text-slate-500">SKU: {item.product?.sku || '—'}</span></td><td className="border border-slate-200 px-3 py-3">{item.quantity}</td><td className="border border-slate-200 px-3 py-3">{formatCurrency(item.unitPrice)}</td><td className="border border-slate-200 px-3 py-3 text-right font-medium">{formatCurrency(item.totalPrice)}</td></tr>)}
               </tbody>
               <tfoot className="font-semibold text-slate-800">
-                <tr><td colSpan={3} className="border border-slate-200 px-3 py-3 text-right">Subtotal</td><td className="border border-slate-200 px-3 py-3 text-right">{formatCurrency(sale.subtotal)}</td></tr>
+                <tr className="invoice-download-hidden"><td colSpan={3} className="border border-slate-200 px-3 py-3 text-right">Subtotal</td><td className="border border-slate-200 px-3 py-3 text-right">{formatCurrency(sale.subtotal)}</td></tr>
                 {Number(sale.discount) > 0 && <tr><td colSpan={3} className="border border-slate-200 px-3 py-3 text-right">Discount</td><td className="border border-slate-200 px-3 py-3 text-right">−{formatCurrency(sale.discount)}</td></tr>}
                 <tr className="bg-slate-50 text-base"><td colSpan={3} className="border border-slate-200 px-3 py-3 text-right">Total Amount</td><td className="border border-slate-200 px-3 py-3 text-right">{formatCurrency(sale.totalAmount)}</td></tr>
               </tfoot>
@@ -76,7 +76,7 @@ export default function SaleDetails({ sale, onPaymentStatusChange, savingPayment
           </div>
         </section>
 
-        {sale.notes && <section className="mt-6 rounded-lg bg-slate-50 p-4"><h2 className="text-sm font-bold text-slate-800">Notes</h2><p className="mt-1 text-sm text-slate-600">{sale.notes}</p></section>}
+        {sale.notes && <section className="invoice-download-hidden mt-6 rounded-lg bg-slate-50 p-4"><h2 className="text-sm font-bold text-slate-800">Notes</h2><p className="mt-1 text-sm text-slate-600">{sale.notes}</p></section>}
         <footer className="mt-10 border-t border-slate-200 pt-6 text-center text-sm text-slate-500">Thank you for your business.</footer>
       </article>
       <p className="no-print text-center text-xs text-slate-500">Download opens your browser’s print dialog. Choose “Save as PDF” to download the invoice.</p>

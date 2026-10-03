@@ -113,7 +113,7 @@ button {
     display: none !important;
   }
 
-  .payment-status-print {
-    display: block !important;
+  .invoice-download-hidden {
+    display: none !important;
   }
 }

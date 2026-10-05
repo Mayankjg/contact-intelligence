@@ -360,8 +360,8 @@ export default function ProductForm({
         initialData?.description || '',
       price:
         initialData?.price || 0,
-      stock:
-        initialData ? 0 : initialData?.stock || 0,
+      // Product edits treat this field as an additive stock adjustment.
+      stock: 0,
       status:
         initialData?.status ||
         'ACTIVE',

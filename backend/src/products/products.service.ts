@@ -204,14 +204,15 @@
 //   }
 // }
 
-
-
-
 import {
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
+import { Prisma, StockMovementStatus, StockMovementType } from '@prisma/client';
+import { createStockDocumentNumber } from '../stock/stock-number';
+import { ensureStockPeriodOpen } from '../stock/stock-period';
 
 import { ProductStatus } from '@prisma/client';
 
@@ -223,41 +224,54 @@ import { ProductQueryDto } from './dto/product-query.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    dto: CreateProductDto,
-  ) {
-    const existing =
-      await this.prisma.product.findUnique({
-        where: {
-          sku: dto.sku,
-        },
-      });
+  async create(dto: CreateProductDto) {
+    const existing = await this.prisma.product.findUnique({
+      where: {
+        sku: dto.sku,
+      },
+    });
 
     if (existing) {
-      throw new ConflictException(
-        'Product SKU already exists',
-      );
+      throw new ConflictException('Product SKU already exists');
     }
 
-    const product =
-      await this.prisma.product.create({
-        data: {
-          name: dto.name,
-          sku: dto.sku,
-          description: dto.description,
-          price: dto.price,
-          stock: dto.stock,
-          status:
-            dto.stock > 0
-              ? ProductStatus.ACTIVE
-              : ProductStatus.INACTIVE,
-          category: dto.category,
-        },
-      });
+    const product = await this.prisma.$transaction(
+      async (tx) => {
+        if (dto.stock > 0) await ensureStockPeriodOpen(tx, new Date());
+        const created = await tx.product.create({
+          data: {
+            name: dto.name,
+            sku: dto.sku,
+            description: dto.description,
+            price: dto.price,
+            stock: dto.stock,
+            status:
+              dto.stock > 0 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE,
+            category: dto.category,
+          },
+        });
+        if (dto.stock > 0) {
+          await tx.stockMovement.create({
+            data: {
+              documentNo: createStockDocumentNumber(StockMovementType.INWARD),
+              productId: created.id,
+              type: StockMovementType.INWARD,
+              status: StockMovementStatus.RECEIVED,
+              quantity: dto.stock,
+              stockBefore: 0,
+              stockAfter: dto.stock,
+              supplier: 'Opening Stock',
+              warehouse: 'Main Warehouse',
+              notes: 'Opening stock',
+            },
+          });
+        }
+        return created;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
 
     return {
       success: true,
@@ -265,29 +279,22 @@ export class ProductsService {
     };
   }
 
-  async findAll(
-    query: ProductQueryDto,
-  ) {
-    const page =
-      query.page || 1;
+  async findAll(query: ProductQueryDto) {
+    const page = query.page || 1;
 
-    const limit =
-      query.limit || 10;
+    const limit = query.limit || 10;
 
-    const skip =
-      (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const where: any = {};
 
     if (query.status) {
-      where.status =
-        query.status;
+      where.status = query.status;
     }
 
     if (query.category) {
       where.category = {
-        contains:
-          query.category,
+        contains: query.category,
         mode: 'insensitive',
       };
     }
@@ -296,25 +303,20 @@ export class ProductsService {
       where.OR = [
         {
           name: {
-            contains:
-              query.search,
+            contains: query.search,
             mode: 'insensitive',
           },
         },
         {
           sku: {
-            contains:
-              query.search,
+            contains: query.search,
             mode: 'insensitive',
           },
         },
       ];
     }
 
-    const [
-      products,
-      total,
-    ] = await Promise.all([
+    const [products, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
         skip,
@@ -343,37 +345,28 @@ export class ProductsService {
         total,
         page,
         limit,
-        totalPages:
-          Math.ceil(
-            total / limit,
-          ),
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
 
-  async findById(
-    id: string,
-  ) {
-    const product =
-      await this.prisma.product.findUnique({
-        where: {
-          id,
-        },
+  async findById(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: {
+        id,
+      },
 
-        include: {
-          services: {
-            orderBy: {
-              daysAfterPurchase:
-                'asc',
-            },
+      include: {
+        services: {
+          orderBy: {
+            daysAfterPurchase: 'asc',
           },
         },
-      });
+      },
+    });
 
     if (!product) {
-      throw new NotFoundException(
-        'Product not found',
-      );
+      throw new NotFoundException('Product not found');
     }
 
     return {
@@ -382,37 +375,28 @@ export class ProductsService {
     };
   }
 
-  async update(
-    id: string,
-    dto: UpdateProductDto,
-  ) {
-    const existingResponse =
-      await this.findById(id);
+  async update(id: string, dto: UpdateProductDto) {
+    const existingResponse = await this.findById(id);
 
-    const existing =
-      existingResponse.data;
+    const existing = existingResponse.data;
 
     if (dto.sku) {
-      const duplicate =
-        await this.prisma.product.findFirst({
-          where: {
-            sku: dto.sku,
+      const duplicate = await this.prisma.product.findFirst({
+        where: {
+          sku: dto.sku,
 
-            NOT: {
-              id,
-            },
+          NOT: {
+            id,
           },
-        });
+        },
+      });
 
       if (duplicate) {
-        throw new ConflictException(
-          'Product SKU already exists',
-        );
+        throw new ConflictException('Product SKU already exists');
       }
     }
 
-    const stockToAdd =
-      dto.stock;
+    const stockToAdd = dto.stock;
 
     const productData = {
       ...dto,
@@ -421,31 +405,54 @@ export class ProductsService {
     delete productData.stock;
     delete productData.status;
 
-    const updatedStock =
-      existing.stock +
-      (stockToAdd ?? 0);
+    const product = await this.prisma.$transaction(
+      async (tx) => {
+        const stockDate = new Date();
+        if (stockToAdd !== undefined && stockToAdd > 0)
+          await ensureStockPeriodOpen(tx, stockDate);
+        const current = await tx.product.findUnique({ where: { id } });
+        if (!current) throw new NotFoundException('Product not found');
+        const updatedStock = current.stock + (stockToAdd ?? 0);
+        const updated = await tx.product.update({
+          where: {
+            id,
+          },
 
-    const product =
-      await this.prisma.product.update({
-        where: {
-          id,
-        },
+          data: {
+            ...productData,
+            ...(stockToAdd === undefined
+              ? {}
+              : {
+                  stock: {
+                    increment: stockToAdd,
+                  },
+                }),
+            status:
+              updatedStock > 0 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE,
+          },
+        });
 
-        data: {
-          ...productData,
-          ...(stockToAdd === undefined
-            ? {}
-            : {
-                stock: {
-                  increment: stockToAdd,
-                },
-              }),
-          status:
-            updatedStock > 0
-              ? ProductStatus.ACTIVE
-              : ProductStatus.INACTIVE,
-        },
-      });
+        if (stockToAdd !== undefined && stockToAdd > 0) {
+          await tx.stockMovement.create({
+            data: {
+              documentNo: createStockDocumentNumber(StockMovementType.INWARD),
+              productId: id,
+              type: StockMovementType.INWARD,
+              status: StockMovementStatus.RECEIVED,
+              quantity: stockToAdd,
+              stockBefore: current.stock,
+              stockAfter: updatedStock,
+              supplier: 'Stock Adjustment',
+              warehouse: 'Main Warehouse',
+              notes: 'Stock added from product update',
+              occurredAt: stockDate,
+            },
+          });
+        }
+        return updated;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
 
     return {
       success: true,
@@ -453,17 +460,14 @@ export class ProductsService {
     };
   }
 
-  async remove(
-    id: string,
-  ) {
+  async remove(id: string) {
     await this.findById(id);
 
-    const purchaseItem =
-      await this.prisma.purchaseItem.findFirst({
-        where: {
-          productId: id,
-        },
-      });
+    const purchaseItem = await this.prisma.purchaseItem.findFirst({
+      where: {
+        productId: id,
+      },
+    });
 
     if (purchaseItem) {
       throw new ConflictException(
@@ -480,8 +484,7 @@ export class ProductsService {
     return {
       success: true,
 
-      message:
-        'Product deleted successfully',
+      message: 'Product deleted successfully',
     };
   }
 }

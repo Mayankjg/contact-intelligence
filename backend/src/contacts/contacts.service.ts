@@ -347,6 +347,7 @@ export class ContactsService {
       await this.prisma.contact.findFirst({
         where: {
           phone: dto.phone,
+          deletedAt: null,
         },
       });
 
@@ -393,7 +394,7 @@ export class ContactsService {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = { deletedAt: null };
 
     if (query.status) {
       where.status = query.status;
@@ -465,9 +466,10 @@ export class ContactsService {
 
   async findById(id: string) {
     const contact =
-      await this.prisma.contact.findUnique({
+      await this.prisma.contact.findFirst({
         where: {
           id,
+          deletedAt: null,
         },
       });
 
@@ -487,6 +489,7 @@ export class ContactsService {
     const contact =
       await this.prisma.contact.findFirst({
         where: {
+          deletedAt: null,
           phone: {
             contains: phone,
           },
@@ -507,15 +510,17 @@ export class ContactsService {
 
   async getDetails(id: string) {
     const contact =
-      await this.prisma.contact.findUnique({
+      await this.prisma.contact.findFirst({
         where: {
           id,
+          deletedAt: null,
         },
 
         include: {
           owner: true,
 
           purchases: {
+            where: { deletedAt: null },
             orderBy: {
               purchaseDate: 'desc',
             },
@@ -530,6 +535,7 @@ export class ContactsService {
           },
 
           services: {
+            where: { purchase: { deletedAt: null } },
             orderBy: {
               scheduledDate: 'asc',
             },
@@ -545,6 +551,7 @@ export class ContactsService {
           },
 
           followUps: {
+            where: { deletedAt: null },
             orderBy: {
               followUpDate: 'asc',
             },
@@ -693,7 +700,8 @@ export class ContactsService {
       const duplicate =
         await this.prisma.contact.findFirst({
           where: {
-            phone: dto.phone,
+          phone: dto.phone,
+          deletedAt: null,
             NOT: {
               id,
             },
@@ -725,16 +733,17 @@ export class ContactsService {
   async remove(id: string) {
     await this.findById(id);
 
-    await this.prisma.contact.delete({
+    await this.prisma.contact.update({
       where: {
         id,
       },
+      data: { deletedAt: new Date() },
     });
 
     return {
       success: true,
       message:
-        'Contact deleted successfully',
+        'Contact archived successfully',
     };
   }
 }

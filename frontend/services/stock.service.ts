@@ -39,6 +39,17 @@ export interface StockMovementListResponse {
   };
 }
 
+export interface StockClosureResponse {
+  success: boolean;
+  alreadyClosed: boolean;
+  data: {
+    id: string;
+    startDate: string;
+    endDate: string;
+    lines: Array<{ productId: string; productName: string; sku: string; opening: number; inward: number; outward: number; closing: number }>;
+  };
+}
+
 export const stockService = {
   async getMovements(params: {
     page: number;
@@ -80,15 +91,17 @@ export const stockService = {
   },
 
   async closePeriod(data: { startDate: string; endDate: string }) {
-    return apiRequest<{
-      success: boolean;
-      alreadyClosed: boolean;
-      data: {
-        id: string;
-        startDate: string;
-        endDate: string;
-        lines: Array<{ productId: string; productName: string; sku: string; opening: number; inward: number; outward: number; closing: number }>;
-      };
-    }>('/stock/closures', { method: 'POST', body: JSON.stringify(data) });
+    return apiRequest<StockClosureResponse>('/stock/closures', { method: 'POST', body: JSON.stringify(data) });
+  },
+
+  async previewPeriod(data: { startDate: string; endDate: string }) {
+    return apiRequest<StockClosureResponse>('/stock/closures/preview', { method: 'POST', body: JSON.stringify(data) });
+  },
+
+  async reopenPeriod(date: string) {
+    return apiRequest<{ success: boolean; reopened: boolean }>(
+      '/stock/closures/reopen',
+      { method: 'POST', body: JSON.stringify({ date }) },
+    );
   },
 };

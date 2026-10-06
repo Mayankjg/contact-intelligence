@@ -608,7 +608,7 @@ export default function ContactsPage() {
   ) => {
     const confirmed =
       window.confirm(
-        `Delete ${contact.firstName} ${contact.lastName}?`,
+        `Remove ${contact.firstName} ${contact.lastName} from the project? The record will be kept in the database.`,
       );
 
     if (!confirmed) {

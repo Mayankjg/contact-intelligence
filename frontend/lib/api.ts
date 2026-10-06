@@ -69,9 +69,20 @@
 
 import { notifySuccessfulAction } from '@/lib/notification-events';
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:5000/api';
+function getApiUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+  if (configuredUrl) return configuredUrl;
+
+  // When the app is opened from another device, localhost points to that
+  // device. Reuse the frontend host so the browser reaches the dev API on LAN.
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${hostname}:5000/api`;
+  }
+
+  return 'http://localhost:5000/api';
+}
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -83,7 +94,7 @@ export async function apiRequest<T>(
       : window.localStorage.getItem('contactiq_token');
 
   const response = await fetch(
-    `${API_URL}${endpoint}`,
+    `${getApiUrl()}${endpoint}`,
     {
       ...options,
 

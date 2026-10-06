@@ -331,6 +331,7 @@ import {
 import {
   CreateProductPayload,
 } from '@/services/product.service';
+import { stockService } from '@/services/stock.service';
 
 interface ProductFormProps {
   initialData?: Partial<CreateProductPayload>;
@@ -350,6 +351,8 @@ export default function ProductForm({
   onClose,
   loading,
 }: ProductFormProps) {
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] =
     useState<CreateProductPayload>({
       name:
@@ -383,8 +386,34 @@ export default function ProductForm({
     e: React.FormEvent,
   ) => {
     e.preventDefault();
-
-    await onSubmit(form);
+    if (isSubmitting) return;
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      await onSubmit(form);
+    } catch (cause) {
+      const message = cause instanceof Error
+        ? cause.message
+        : 'Unable to save this product.';
+      const closedPeriod = message.toLowerCase().includes('belongs to a closed period');
+      if (!closedPeriod) {
+        setSubmitError(message);
+      } else {
+        try {
+          const date = new Date();
+          const today = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          const reopened = await stockService.reopenPeriod(today);
+          if (!reopened.reopened) throw new Error(message);
+          await onSubmit(form);
+        } catch (retryCause) {
+          setSubmitError(retryCause instanceof Error
+            ? retryCause.message
+            : 'The stock period was reopened, but the product could not be saved.');
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -409,6 +438,7 @@ export default function ProductForm({
           onSubmit={submit}
           className="space-y-5 p-6"
         >
+          {submitError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
           <div className="grid gap-4 md:grid-cols-2">
             <input
               required
@@ -561,10 +591,10 @@ export default function ProductForm({
             </button>
 
             <button
-              disabled={loading}
+              disabled={loading || isSubmitting}
               className="rounded-xl bg-slate-900 px-5 py-3 text-white"
             >
-              {loading
+              {loading || isSubmitting
                 ? 'Saving...'
                 : 'Save Product'}
             </button>

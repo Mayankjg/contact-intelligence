@@ -28,9 +28,10 @@ export class FollowupsService {
     dto: CreateFollowUpDto,
   ) {
     const contact =
-      await this.prisma.contact.findUnique({
+      await this.prisma.contact.findFirst({
         where: {
           id: dto.contactId,
+          deletedAt: null,
         },
       });
 
@@ -74,7 +75,10 @@ export class FollowupsService {
   async findAll(
     query: any,
   ) {
-    const where: any = {};
+    const where: any = {
+      deletedAt: null,
+      contact: { deletedAt: null },
+    };
 
     if (query.contactId) {
       where.contactId =
@@ -116,10 +120,11 @@ export class FollowupsService {
     id: string,
   ) {
     const followUp =
-      await this.prisma.purchaseFollowUp.findUnique(
+      await this.prisma.purchaseFollowUp.findFirst(
         {
           where: {
             id,
+            deletedAt: null,
           },
 
           include: {
@@ -216,11 +221,12 @@ export class FollowupsService {
   ) {
     await this.findById(id);
 
-    await this.prisma.purchaseFollowUp.delete(
+    await this.prisma.purchaseFollowUp.update(
       {
         where: {
           id,
         },
+        data: { deletedAt: new Date() },
       },
     );
 
@@ -228,7 +234,7 @@ export class FollowupsService {
       success: true,
 
       message:
-        'Follow-up deleted successfully',
+        'Follow-up archived successfully',
     };
   }
 }

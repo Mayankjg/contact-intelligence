@@ -6,12 +6,16 @@ export async function ensureStockPeriodOpen(
   date: Date,
 ) {
   const closed = await tx.stockClosure.findFirst({
-    where: { startDate: { lte: date }, endDate: { gte: date } },
+    where: {
+      startDate: { lte: date },
+      endDate: { gte: date },
+      reopenedAt: null,
+    },
     select: { id: true },
   });
   if (closed) {
     throw new BadRequestException(
-      'This stock date belongs to a closed period. Reopen the next period or use an open date.',
+      'This stock date belongs to a closed period. Reopen it to continue.',
     );
   }
 }

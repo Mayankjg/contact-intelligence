@@ -27,7 +27,7 @@ function getActionDescription(endpoint: string) {
 
 function getActionMessage(method: string) {
   if (method === 'POST') return 'created successfully.';
-  if (method === 'DELETE') return 'deleted successfully.';
+  if (method === 'DELETE') return 'removed from the project; kept in the database.';
   return 'updated successfully.';
 }
 

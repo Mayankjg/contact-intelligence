@@ -133,6 +133,7 @@ model Contact {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   @@index([phone])
   @@index([email])
@@ -153,6 +154,7 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   services       ProductService[]
   items          PurchaseItem[]
@@ -191,6 +193,7 @@ model StockClosure {
   startDate DateTime
   endDate   DateTime
   createdAt DateTime           @default(now())
+  reopenedAt DateTime?
   lines     StockClosureLine[]
 
   @@unique([startDate, endDate])
@@ -229,6 +232,7 @@ model ProductService {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   product          Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
   customerServices CustomerService[]
@@ -259,6 +263,7 @@ model Purchase {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   @@index([contactId])
   @@index([purchaseDate])
@@ -335,6 +340,7 @@ model PurchaseFollowUp {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   @@index([contactId])
   @@index([followUpDate])

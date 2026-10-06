@@ -38,9 +38,10 @@ export class PurchasesService {
       );
     }
 
-    const contact = await this.prisma.contact.findUnique({
+    const contact = await this.prisma.contact.findFirst({
       where: {
         id: dto.contactId,
+        deletedAt: null,
       },
     });
 
@@ -54,6 +55,7 @@ export class PurchasesService {
 
     const products = await this.prisma.product.findMany({
       where: {
+        deletedAt: null,
         id: {
           in: uniqueProductIds,
         },
@@ -146,8 +148,8 @@ export class PurchasesService {
         });
 
         for (const item of dto.items) {
-          const product = await tx.product.findUnique({
-            where: { id: item.productId },
+          const product = await tx.product.findFirst({
+            where: { id: item.productId, deletedAt: null },
           });
 
           if (!product) {
@@ -249,7 +251,7 @@ export class PurchasesService {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = { deletedAt: null };
 
     if (params?.contactId) {
       where.contactId = params.contactId;
@@ -331,9 +333,10 @@ export class PurchasesService {
   }
 
   async findById(id: string) {
-    const purchase = await this.prisma.purchase.findUnique({
+    const purchase = await this.prisma.purchase.findFirst({
       where: {
         id,
+        deletedAt: null,
       },
 
       include: {
@@ -393,8 +396,11 @@ export class PurchasesService {
   async remove(id: string) {
     await this.findById(id);
 
-    await this.prisma.purchase.delete({ where: { id } });
+    await this.prisma.purchase.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
-    return { success: true, message: 'Purchase deleted successfully' };
+    return { success: true, message: 'Purchase archived successfully' };
   }
 }

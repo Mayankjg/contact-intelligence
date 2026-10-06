@@ -26,11 +26,11 @@ export class CustomerServicesService {
 
   async create(dto: CreateCustomerServiceDto) {
     const [contact, purchase, template] = await Promise.all([
-      this.prisma.contact.findUnique({ where: { id: dto.contactId } }),
-      this.prisma.purchase.findUnique({ where: { id: dto.purchaseId } }),
+      this.prisma.contact.findFirst({ where: { id: dto.contactId, deletedAt: null } }),
+      this.prisma.purchase.findFirst({ where: { id: dto.purchaseId, deletedAt: null } }),
       dto.productServiceId
-        ? this.prisma.productService.findUnique({
-            where: { id: dto.productServiceId },
+        ? this.prisma.productService.findFirst({
+            where: { id: dto.productServiceId, deletedAt: null },
           })
         : null,
     ]);
@@ -82,6 +82,8 @@ export class CustomerServicesService {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const where = {
+      contact: { deletedAt: null },
+      purchase: { deletedAt: null },
       ...(query.contactId && {
         contactId: query.contactId,
       }),

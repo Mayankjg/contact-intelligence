@@ -7,9 +7,14 @@ import { Product } from '@/types/product';
 import { CreateSalePayload } from '@/types/sale';
 import { formatCurrency } from '@/lib/utils';
 
+const todayLocal = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export default function SaleForm({ contacts, products, onSubmit, submitting }: { contacts: Contact[]; products: Product[]; onSubmit: (data: CreateSalePayload) => Promise<void>; submitting?: boolean }) {
   const [contactId, setContactId] = useState('');
-  const [saleDate, setSaleDate] = useState(new Date().toISOString().slice(0, 10));
+  const [saleDate, setSaleDate] = useState(todayLocal);
   const [paymentStatus, setPaymentStatus] = useState<'PAID' | 'UNPAID'>('UNPAID');
   const [discount, setDiscount] = useState(0);
   const [notes, setNotes] = useState('');

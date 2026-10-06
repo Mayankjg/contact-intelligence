@@ -12,9 +12,21 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 import { CreateStockClosureDto } from './dto/create-stock-closure.dto';
+import { ReopenStockPeriodDto } from './dto/reopen-stock-period.dto';
 import { StockMovementQueryDto } from './dto/stock-movement-query.dto';
 import { createStockDocumentNumber } from './stock-number';
 import { ensureStockPeriodOpen } from './stock-period';
+
+// Stock reports use calendar dates in the business timezone, Asia/Kolkata.
+// Convert date-only inputs to instants at that timezone's day boundaries so
+// movements near midnight are assigned to the date users see in the UI.
+function businessDayStart(date: string) {
+  return new Date(`${date.slice(0, 10)}T00:00:00.000+05:30`);
+}
+
+function businessDayEnd(date: string) {
+  return new Date(`${date.slice(0, 10)}T23:59:59.999+05:30`);
+}
 
 @Injectable()
 export class StockService {
@@ -41,8 +53,8 @@ export class StockService {
         return await this.prisma.$transaction(
           async (tx) => {
             await ensureStockPeriodOpen(tx, occurredAt);
-            const product = await tx.product.findUnique({
-              where: { id: dto.productId },
+            const product = await tx.product.findFirst({
+              where: { id: dto.productId, deletedAt: null },
             });
 
             if (!product) {
@@ -151,9 +163,125 @@ export class StockService {
     };
   }
 
+  private async calculateClosureLines(
+    tx: Prisma.TransactionClient,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    const [products, movements] = await Promise.all([
+      tx.product.findMany({ where: { deletedAt: null }, orderBy: { name: 'asc' } }),
+      tx.stockMovement.findMany({
+        where: { occurredAt: { lte: endDate } },
+        orderBy: [{ occurredAt: 'asc' }, { createdAt: 'asc' }],
+        select: {
+          productId: true,
+          type: true,
+          quantity: true,
+          stockBefore: true,
+          stockAfter: true,
+          occurredAt: true,
+        },
+      }),
+    ]);
+    const movementsByProduct = new Map<string, typeof movements>();
+    for (const movement of movements) {
+      const productMovements = movementsByProduct.get(movement.productId) ?? [];
+      productMovements.push(movement);
+      movementsByProduct.set(movement.productId, productMovements);
+    }
+
+    return products.map((product) => {
+      const productMovements = movementsByProduct.get(product.id) ?? [];
+      const during = productMovements.filter(
+        (movement) => movement.occurredAt >= startDate,
+      );
+      const inward = during.reduce(
+        (sum, movement) =>
+          sum +
+          (movement.type === StockMovementType.INWARD ? movement.quantity : 0),
+        0,
+      );
+      const outward = during.reduce(
+        (sum, movement) =>
+          sum +
+          (movement.type === StockMovementType.OUTWARD ? movement.quantity : 0),
+        0,
+      );
+      // Use the ledger's ending balance for this period, then derive opening
+      // from the period movements. This keeps opening + inward - outward
+      // reconciled with the actual closing balance even when older movement
+      // snapshots predate the selected report range.
+      const closing =
+        productMovements[productMovements.length - 1]?.stockAfter ??
+        product.stock;
+      const opening = closing - inward + outward;
+      return {
+        productId: product.id,
+        productName: product.name,
+        sku: product.sku,
+        opening,
+        inward,
+        outward,
+        closing,
+      };
+    });
+  }
+
+  async previewPeriod(dto: CreateStockClosureDto) {
+    const startDate = businessDayStart(dto.startDate);
+    const endDate = businessDayEnd(dto.endDate);
+    if (startDate > endDate) {
+      throw new BadRequestException('Start date must be before end date');
+    }
+
+    const todayInBusinessTimezone = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date());
+    if (dto.endDate.slice(0, 10) > todayInBusinessTimezone) {
+      throw new BadRequestException('A closing preview cannot include future dates.');
+    }
+
+    const lines = await this.prisma.$transaction((tx) =>
+      this.calculateClosureLines(tx, startDate, endDate),
+    );
+    return {
+      success: true,
+      alreadyClosed: false,
+      data: { id: 'live-preview', startDate, endDate, lines },
+    };
+  }
+
+  async reopenPeriod(dto: ReopenStockPeriodDto) {
+    const date = businessDayStart(dto.date);
+    // Also match closures created before report dates were stored using the
+    // Asia/Kolkata business-day boundary (the legacy boundary was UTC).
+    const legacyDate = new Date(`${dto.date.slice(0, 10)}T00:00:00.000Z`);
+    const result = await this.prisma.stockClosure.updateMany({
+      where: {
+        OR: [
+          { startDate: { lte: date }, endDate: { gte: date } },
+          { startDate: { lte: legacyDate }, endDate: { gte: legacyDate } },
+        ],
+        reopenedAt: null,
+      },
+      data: { reopenedAt: new Date() },
+    });
+
+    return { success: true, reopened: result.count > 0 };
+  }
+
   async closePeriod(dto: CreateStockClosureDto) {
-    const startDate = new Date(`${dto.startDate.slice(0, 10)}T00:00:00.000Z`);
-    const endDate = new Date(`${dto.endDate.slice(0, 10)}T23:59:59.999Z`);
+    const todayInBusinessTimezone = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date());
+    if (dto.endDate.slice(0, 10) >= todayInBusinessTimezone) {
+      throw new BadRequestException(
+        'A stock period can only be closed through yesterday. Keep today open for stock entries.',
+      );
+    }
+
+    const startDate = businessDayStart(dto.startDate);
+    const endDate = businessDayEnd(dto.endDate);
     if (startDate > endDate)
       throw new BadRequestException('Start date must be before end date');
 
@@ -164,73 +292,25 @@ export class StockService {
             where: { startDate_endDate: { startDate, endDate } },
             include: { lines: { orderBy: { productName: 'asc' } } },
           });
-          if (existing) return { data: existing, alreadyClosed: true };
-
-          const [products, movements] = await Promise.all([
-            tx.product.findMany({ orderBy: { name: 'asc' } }),
-            tx.stockMovement.findMany({
-              where: { occurredAt: { lte: endDate } },
-              orderBy: [{ occurredAt: 'asc' }, { createdAt: 'asc' }],
-              select: {
-                productId: true,
-                type: true,
-                quantity: true,
-                stockBefore: true,
-                stockAfter: true,
-                occurredAt: true,
-              },
-            }),
-          ]);
-          const movementsByProduct = new Map<string, typeof movements>();
-          for (const movement of movements) {
-            const productMovements =
-              movementsByProduct.get(movement.productId) ?? [];
-            productMovements.push(movement);
-            movementsByProduct.set(movement.productId, productMovements);
+          if (existing && !existing.reopenedAt) {
+            return { data: existing, alreadyClosed: true };
           }
-          const lines = products.map((product) => {
-            const productMovements = movementsByProduct.get(product.id) ?? [];
-            const during = productMovements.filter(
-              (movement) => movement.occurredAt >= startDate,
-            );
-            const before = productMovements.filter(
-              (movement) => movement.occurredAt < startDate,
-            );
-            const opening =
-              before[before.length - 1]?.stockAfter ??
-              during[0]?.stockBefore ??
-              product.stock;
-            const inward = during.reduce(
-              (sum, movement) =>
-                sum +
-                (movement.type === StockMovementType.INWARD
-                  ? movement.quantity
-                  : 0),
-              0,
-            );
-            const outward = during.reduce(
-              (sum, movement) =>
-                sum +
-                (movement.type === StockMovementType.OUTWARD
-                  ? movement.quantity
-                  : 0),
-              0,
-            );
-            return {
-              productId: product.id,
-              productName: product.name,
-              sku: product.sku,
-              opening,
-              inward,
-              outward,
-              closing: opening + inward - outward,
-            };
-          });
 
-          const data = await tx.stockClosure.create({
-            data: { startDate, endDate, lines: { create: lines } },
-            include: { lines: { orderBy: { productName: 'asc' } } },
-          });
+          const lines = await this.calculateClosureLines(tx, startDate, endDate);
+
+          const data = existing
+            ? await tx.stockClosure.update({
+                where: { id: existing.id },
+                data: {
+                  reopenedAt: null,
+                  lines: { deleteMany: {}, create: lines },
+                },
+                include: { lines: { orderBy: { productName: 'asc' } } },
+              })
+            : await tx.stockClosure.create({
+                data: { startDate, endDate, lines: { create: lines } },
+                include: { lines: { orderBy: { productName: 'asc' } } },
+              });
           return { data, alreadyClosed: false };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },

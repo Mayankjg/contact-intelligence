@@ -417,6 +417,7 @@ import ProductTable from '@/components/products/product-table';
 import ProductForm from '@/components/products/product-form';
 
 import { useProducts } from '@/hooks/use-products';
+import { CreateProductPayload } from '@/services/product.service';
 
 import { Product } from '@/types/product';
 
@@ -445,7 +446,7 @@ export default function ProductsPage() {
   });
 
   const submit = async (
-    data: any,
+    data: CreateProductPayload,
   ) => {
     if (editingProduct) {
       await updateProduct(
@@ -466,7 +467,7 @@ export default function ProductsPage() {
     setActionError('');
     const confirmed =
       window.confirm(
-        `Delete ${product.name}?`,
+        `Remove ${product.name} from the project? The record will be kept in the database.`,
       );
 
     if (!confirmed) {

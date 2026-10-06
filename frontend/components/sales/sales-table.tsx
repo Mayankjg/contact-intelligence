@@ -35,7 +35,7 @@ export default function SalesTable({ sales, onDelete }: { sales: Sale[]; onDelet
                 <td className="px-5 py-4"><SaleStatusBadge status={sale.status} /></td>
                 <td className="px-5 py-4 text-sm text-slate-500">{formatDate(sale.purchaseDate)}</td>
                 <td className="px-5 py-4">
-                  {onDelete && <button onClick={() => onDelete(sale)} className="text-sm font-medium text-red-600 hover:underline">Delete</button>}
+                  {onDelete && <button onClick={() => onDelete(sale)} className="text-sm font-medium text-red-600 hover:underline">Remove</button>}
                 </td>
               </tr>
             ))}

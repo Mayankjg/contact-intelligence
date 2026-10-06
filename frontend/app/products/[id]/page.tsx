@@ -377,7 +377,7 @@ export default function ProductDetailsPage({
   ) => {
     const confirmed =
       window.confirm(
-        `Delete ${service.name}?`,
+        `Remove ${service.name} from the project? The record will be kept in the database.`,
       );
 
     if (!confirmed) {

@@ -19,9 +19,10 @@ export class ServicesService {
     productId: string,
   ) {
     const product =
-      await this.prisma.product.findUnique({
+      await this.prisma.product.findFirst({
         where: {
           id: productId,
+          deletedAt: null,
         },
       });
 
@@ -84,6 +85,7 @@ export class ServicesService {
         {
           where: {
             productId,
+            deletedAt: null,
           },
 
           orderBy: {
@@ -110,6 +112,7 @@ export class ServicesService {
           where: {
             id: serviceId,
             productId,
+            deletedAt: null,
           },
         },
       );
@@ -165,11 +168,12 @@ export class ServicesService {
       serviceId,
     );
 
-    await this.prisma.productService.delete(
+    await this.prisma.productService.update(
       {
         where: {
           id: serviceId,
         },
+        data: { deletedAt: new Date() },
       },
     );
 
@@ -177,7 +181,7 @@ export class ServicesService {
       success: true,
 
       message:
-        'Service template deleted successfully',
+        'Service template archived successfully',
     };
   }
 }

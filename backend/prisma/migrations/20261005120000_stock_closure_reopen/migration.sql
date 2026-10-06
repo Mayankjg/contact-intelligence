@@ -1,0 +1,1 @@
+ALTER TABLE "StockClosure" ADD COLUMN "reopenedAt" TIMESTAMP(3);

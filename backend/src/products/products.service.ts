@@ -286,7 +286,7 @@ export class ProductsService {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = { deletedAt: null };
 
     if (query.status) {
       where.status = query.status;
@@ -327,7 +327,7 @@ export class ProductsService {
         },
 
         include: {
-          services: true,
+          services: { where: { deletedAt: null } },
         },
       }),
 
@@ -351,13 +351,15 @@ export class ProductsService {
   }
 
   async findById(id: string) {
-    const product = await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findFirst({
       where: {
         id,
+        deletedAt: null,
       },
 
       include: {
         services: {
+          where: { deletedAt: null },
           orderBy: {
             daysAfterPurchase: 'asc',
           },
@@ -384,6 +386,7 @@ export class ProductsService {
       const duplicate = await this.prisma.product.findFirst({
         where: {
           sku: dto.sku,
+          deletedAt: null,
 
           NOT: {
             id,
@@ -462,29 +465,17 @@ export class ProductsService {
 
   async remove(id: string) {
     await this.findById(id);
-
-    const purchaseItem = await this.prisma.purchaseItem.findFirst({
-      where: {
-        productId: id,
-      },
-    });
-
-    if (purchaseItem) {
-      throw new ConflictException(
-        'Product is already used in a purchase and cannot be deleted',
-      );
-    }
-
-    await this.prisma.product.delete({
+    await this.prisma.product.update({
       where: {
         id,
       },
+      data: { deletedAt: new Date() },
     });
 
     return {
       success: true,
 
-      message: 'Product deleted successfully',
+      message: 'Product archived successfully',
     };
   }
 }

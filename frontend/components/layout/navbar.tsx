@@ -140,6 +140,7 @@
 'use client';
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -218,6 +219,37 @@ export default function Navbar() {
     router.replace('/login');
   }
 
+  const updateDueNotifications = useCallback(() => {
+    const { services, followUps, contacts, products } = notificationDataRef.current;
+    const dueItems = sortNotifications([
+      ...buildServiceNotifications(services),
+      ...buildFollowUpNotifications(followUps),
+      ...buildActivityNotifications(contacts, products),
+    ]);
+    const dismissedIds = getDismissedNotificationIds();
+    const firedKey = 'contactiq_fired_due_notifications';
+    let firedIds = new Set<string>();
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(firedKey) || '[]');
+      if (Array.isArray(saved)) firedIds = new Set(saved.filter((id): id is string => typeof id === 'string'));
+    } catch { /* Ignore malformed browser storage. */ }
+
+    const newlyDue = dueItems.filter((item) => !firedIds.has(`${item.id}@${item.dueDate}`) && !dismissedIds.has(item.id));
+    for (const item of newlyDue) {
+      firedIds.add(`${item.id}@${item.dueDate}`);
+      setLatestAction(item);
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(item.title, { body: item.message, tag: item.id });
+      }
+    }
+    window.localStorage.setItem(firedKey, JSON.stringify([...firedIds].slice(-500)));
+
+    setNotifications([
+      ...getStoredActionNotifications(),
+      ...dueItems,
+    ].filter((item) => !dismissedIds.has(item.id)));
+  }, []);
+
   useEffect(() => {
     async function loadNotifications() {
       try {
@@ -277,39 +309,7 @@ export default function Navbar() {
       window.clearInterval(refreshId);
       window.clearInterval(dueCheckId);
     };
-  }, []);
-
-  function updateDueNotifications() {
-    const { services, followUps, contacts, products } = notificationDataRef.current;
-    const dueItems = sortNotifications([
-      ...buildServiceNotifications(services),
-      ...buildFollowUpNotifications(followUps),
-      ...buildActivityNotifications(contacts, products),
-    ]);
-    const dismissedIds = getDismissedNotificationIds();
-    const dueIds = new Set(dueItems.map((item) => item.id));
-    const firedKey = 'contactiq_fired_due_notifications';
-    let firedIds = new Set<string>();
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(firedKey) || '[]');
-      if (Array.isArray(saved)) firedIds = new Set(saved.filter((id): id is string => typeof id === 'string'));
-    } catch { /* Ignore malformed browser storage. */ }
-
-    const newlyDue = dueItems.filter((item) => !firedIds.has(`${item.id}@${item.dueDate}`) && !dismissedIds.has(item.id));
-    for (const item of newlyDue) {
-      firedIds.add(`${item.id}@${item.dueDate}`);
-      setLatestAction(item);
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(item.title, { body: item.message, tag: item.id });
-      }
-    }
-    window.localStorage.setItem(firedKey, JSON.stringify([...firedIds].slice(-500)));
-
-    setNotifications([
-      ...getStoredActionNotifications(),
-      ...dueItems,
-    ].filter((item) => !dismissedIds.has(item.id)));
-  }
+  }, [updateDueNotifications]);
 
   useEffect(() => {
     function handleNotificationUpdate(event: Event) {

@@ -10,7 +10,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [checkedSession, setCheckedSession] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAuthPage = pathname === '/login' || pathname === '/register';
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isAuthPage && !window.localStorage.getItem('contactiq_token')) {
@@ -29,9 +34,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="min-h-screen lg:ml-64">
-        <Navbar />
+        <Navbar
+          isMenuOpen={sidebarOpen}
+          onMenuClick={() => setSidebarOpen((open) => !open)}
+        />
         <main className="p-4 lg:p-8">{children}</main>
       </div>
     </div>

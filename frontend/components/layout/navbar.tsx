@@ -159,6 +159,7 @@ import {
   Users,
   CheckCircle2,
   LogOut,
+  Menu,
 } from 'lucide-react';
 
 import {
@@ -180,7 +181,13 @@ import { serviceService } from '@/services/service.service';
 import { contactService } from '@/services/contact.service';
 import { productService } from '@/services/product.service';
 
-export default function Navbar() {
+export default function Navbar({
+  isMenuOpen,
+  onMenuClick,
+}: {
+  isMenuOpen: boolean;
+  onMenuClick: () => void;
+}) {
   const router = useRouter();
   const [isOpen, setIsOpen] =
     useState(false);
@@ -420,11 +427,21 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="flex h-16 items-center justify-between px-4 lg:px-8">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 lg:hidden"
+          aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-controls="primary-navigation"
+          aria-expanded={isMenuOpen}
+        >
+          <Menu className="h-6 w-6" />
+        </button>
         <div className="hidden text-sm text-slate-500 sm:block">
           Customer Management
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-4">
           {latestAction && (
             <button
               type="button"

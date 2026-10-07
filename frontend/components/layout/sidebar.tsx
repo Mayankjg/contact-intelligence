@@ -561,6 +561,11 @@ import {
   ArrowDownUp,
 } from 'lucide-react';
 
+type SidebarProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
 const menuItems = [
   {
     label: 'Dashboard',
@@ -589,11 +594,22 @@ const menuItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-slate-200 bg-white lg:block">
+    <>
+    <button
+      type="button"
+      aria-label="Close navigation menu"
+      onClick={onClose}
+      className={`fixed inset-0 z-40 bg-slate-950/40 transition-opacity lg:hidden ${isOpen ? 'visible opacity-100' : 'invisible opacity-0'}`}
+    />
+    <aside
+      id="primary-navigation"
+      className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white transition-transform duration-200 ease-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      aria-label="Main navigation"
+    >
       <div className="flex h-full flex-col">
         <div className="border-b border-slate-200 px-6 py-5">
           <div className="flex items-center gap-3">
@@ -668,5 +684,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

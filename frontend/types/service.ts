@@ -38,7 +38,6 @@ export interface CustomerService {
     product?: {
       id: string;
       name: string;
-      sku: string;
     };
   };
 }

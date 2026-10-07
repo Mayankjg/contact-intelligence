@@ -6,7 +6,6 @@ import {
 
 import {
   Prisma,
-  ProductStatus,
   StockMovementStatus,
   StockMovementType,
   StockOutwardPurpose,
@@ -81,6 +80,10 @@ export class PurchasesService {
 
       if (!product) {
         throw new BadRequestException('Product not found');
+      }
+
+      if (product.status === 'INACTIVE') {
+        throw new BadRequestException(`${product.name} is inactive and cannot be sold`);
       }
 
       if (product.stock < item.quantity) {
@@ -174,8 +177,6 @@ export class PurchasesService {
               stock: {
                 decrement: item.quantity,
               },
-              status:
-                stockAfter > 0 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE,
             },
           });
 

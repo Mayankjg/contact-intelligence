@@ -63,7 +63,7 @@ export default function StockPage() {
       });
       setDailyReport(report.data);
       setSuccess(isTodayPreview
-        ? 'Live stock table updated.'
+        ? '' // Live stock table updated.
         : 'Stock period closed and table updated.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to load the stock table.');

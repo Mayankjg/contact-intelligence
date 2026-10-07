@@ -45,7 +45,6 @@ export interface CustomerService {
 
       name: string;
 
-      sku: string;
     };
   };
 }

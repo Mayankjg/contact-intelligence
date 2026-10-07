@@ -38,14 +38,15 @@ export default function ProductHeader({
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              SKU: {product.sku}
+              Supplier: {product.supplierName || '—'}
+              {product.purchaseDate && ` · Purchased ${new Date(`${product.purchaseDate.slice(0, 10)}T00:00:00`).toLocaleDateString('en-IN')}`}
             </p>
           </div>
         </div>
 
         <div>
           <p className="text-sm text-slate-500">
-            Product Price
+            Selling Price
           </p>
 
           <p className="mt-1 text-2xl font-bold text-slate-900">
@@ -53,6 +54,7 @@ export default function ProductHeader({
               product.price,
             )}
           </p>
+          <p className="mt-2 text-xs text-slate-500">Unit cost: {product.unitCost == null ? '—' : formatCurrency(product.unitCost)}</p>
         </div>
       </div>
     </div>

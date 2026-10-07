@@ -7,7 +7,6 @@ export interface SaleItem {
   product: {
     id: string;
     name: string;
-    sku: string;
   };
 }
 

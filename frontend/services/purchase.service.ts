@@ -16,7 +16,6 @@ export interface PurchaseItem {
 
     name: string;
 
-    sku: string;
   };
 }
 

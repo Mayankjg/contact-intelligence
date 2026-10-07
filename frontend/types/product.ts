@@ -7,7 +7,6 @@
 
 //   name: string;
 
-//   sku: string;
 
 //   description?: string | null;
 
@@ -69,7 +68,9 @@ export interface Product {
 
   name: string;
 
-  sku: string;
+  supplierName?: string | null;
+  purchaseDate?: string | null;
+  unitCost?: number | string | null;
 
   description?: string | null;
 

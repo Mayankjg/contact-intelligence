@@ -136,7 +136,6 @@
 //               </div>
 
 //               <p className="mt-1 text-sm text-slate-500">
-//                 SKU: {product.sku}
 //               </p>
 //             </div>
 //           </div>

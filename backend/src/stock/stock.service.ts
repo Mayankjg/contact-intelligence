@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import {
   Prisma,
-  ProductStatus,
   StockMovementStatus,
   StockMovementType,
 } from '@prisma/client';
@@ -84,10 +83,6 @@ export class StockService {
                   dto.type === StockMovementType.INWARD
                     ? { increment: dto.quantity }
                     : { decrement: dto.quantity },
-                status:
-                  stockAfter > 0
-                    ? ProductStatus.ACTIVE
-                    : ProductStatus.INACTIVE,
               },
             });
 
@@ -173,7 +168,7 @@ export class StockService {
 
     const product = await this.prisma.product.findFirst({
       where: { id: query.productId, deletedAt: null },
-      select: { id: true, name: true, sku: true, stock: true },
+      select: { id: true, name: true, stock: true },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -302,7 +297,6 @@ export class StockService {
       return {
         productId: product.id,
         productName: product.name,
-        sku: product.sku,
         opening,
         inward,
         outward,

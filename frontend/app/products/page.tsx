@@ -152,7 +152,6 @@
 //                   );
 //                   setPage(1);
 //                 }}
-//                 placeholder="Search product or SKU..."
 //                 className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 outline-none focus:border-indigo-500"
 //               />
 //             </div>
@@ -223,7 +222,6 @@
 //                     </th>
 
 //                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
-//                       SKU
 //                     </th>
 
 //                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
@@ -270,7 +268,6 @@
 //                         </td>
 
 //                         <td className="px-6 py-4 text-sm text-slate-600">
-//                           {product.sku}
 //                         </td>
 
 //                         <td className="px-6 py-4 text-sm text-slate-600">
@@ -519,7 +516,7 @@ export default function ProductsPage() {
             onChange={(e) =>
               setSearch(e.target.value)
             }
-            placeholder="Search products or SKU..."
+            placeholder="Search products..."
             className="w-full rounded-xl border py-3 pl-10 pr-4 outline-none"
           />
         </div>
@@ -559,6 +556,9 @@ export default function ProductsPage() {
               ? {
                   ...editingProduct,
                   price: Number(editingProduct.price),
+                  unitCost: Number(editingProduct.unitCost ?? 0),
+                  supplierName: editingProduct.supplierName ?? '',
+                  purchaseDate: editingProduct.purchaseDate ?? '',
                 }
               : undefined
           }

@@ -65,7 +65,7 @@ export default function SaleDetails({ sale, onPaymentStatusChange, savingPayment
               <tbody>
                 {items.length === 0
                   ? <tr><td colSpan={4} className="border border-slate-200 px-3 py-6 text-center text-slate-500">No item details available for this invoice.</td></tr>
-                  : items.map((item) => <tr key={item.id} className="text-slate-700"><td className="border border-slate-200 px-3 py-3"><span className="font-medium text-slate-900">{item.product?.name || 'Product'}</span><span className="block text-xs text-slate-500">SKU: {item.product?.sku || '—'}</span></td><td className="border border-slate-200 px-3 py-3">{item.quantity}</td><td className="border border-slate-200 px-3 py-3">{formatCurrency(item.unitPrice)}</td><td className="border border-slate-200 px-3 py-3 text-right font-medium">{formatCurrency(item.totalPrice)}</td></tr>)}
+                  : items.map((item) => <tr key={item.id} className="text-slate-700"><td className="border border-slate-200 px-3 py-3"><span className="font-medium text-slate-900">{item.product?.name || 'Product'}</span></td><td className="border border-slate-200 px-3 py-3">{item.quantity}</td><td className="border border-slate-200 px-3 py-3">{formatCurrency(item.unitPrice)}</td><td className="border border-slate-200 px-3 py-3 text-right font-medium">{formatCurrency(item.totalPrice)}</td></tr>)}
               </tbody>
               <tfoot className="font-semibold text-slate-800">
                 <tr className="invoice-download-hidden"><td colSpan={3} className="border border-slate-200 px-3 py-3 text-right">Subtotal</td><td className="border border-slate-200 px-3 py-3 text-right">{formatCurrency(sale.subtotal)}</td></tr>

@@ -28,7 +28,6 @@
 //   const [form, setForm] =
 //     useState<CreateProductPayload>({
 //       name: '',
-//       sku: '',
 //       description: '',
 //       price: 0,
 //       stock: 0,
@@ -47,7 +46,6 @@
 
 //     setForm({
 //       name: product.name,
-//       sku: product.sku,
 //       description:
 //         product.description || '',
 //       price: Number(product.price),
@@ -82,8 +80,6 @@
 //       return;
 //     }
 
-//     if (!form.sku.trim()) {
-//       setError('SKU is required');
 //       return;
 //     }
 
@@ -160,11 +156,8 @@
 //           />
 
 //           <Input
-//             label="SKU"
 //             required
-//             value={form.sku}
 //             onChange={(value) =>
-//               updateField('sku', value)
 //             }
 //           />
 
@@ -333,6 +326,11 @@ import {
 } from '@/services/product.service';
 import { stockService } from '@/services/stock.service';
 
+const localToday = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 interface ProductFormProps {
   initialData?: Partial<CreateProductPayload>;
 
@@ -357,8 +355,12 @@ export default function ProductForm({
     useState<CreateProductPayload>({
       name:
         initialData?.name || '',
-      sku:
-        initialData?.sku || '',
+      supplierName:
+        initialData?.supplierName || '',
+      purchaseDate:
+        initialData?.purchaseDate?.slice(0, 10) || localToday(),
+      unitCost:
+        Number(initialData?.unitCost || 0),
       description:
         initialData?.description || '',
       price:
@@ -400,9 +402,7 @@ export default function ProductForm({
         setSubmitError(message);
       } else {
         try {
-          const date = new Date();
-          const today = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          const reopened = await stockService.reopenPeriod(today);
+          const reopened = await stockService.reopenPeriod(form.purchaseDate);
           if (!reopened.reopened) throw new Error(message);
           await onSubmit(form);
         } catch (retryCause) {
@@ -440,38 +440,20 @@ export default function ProductForm({
         >
           {submitError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
           <div className="grid gap-4 md:grid-cols-2">
-            <input
-              required
-              placeholder="Product name"
-              value={form.name}
-              onChange={(e) =>
-                update(
-                  'name',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3"
-            />
+            <input required placeholder="Supplier name" value={form.supplierName} onChange={(e) => update('supplierName', e.target.value)} className="rounded-xl border px-4 py-3" />
+            <input required placeholder="Product name" value={form.name} onChange={(e) => update('name', e.target.value)} className="rounded-xl border px-4 py-3" />
 
-            <input
-              required
-              placeholder="SKU"
-              value={form.sku}
-              onChange={(e) =>
-                update(
-                  'sku',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3"
-            />
+            <div className="space-y-2">
+              <label htmlFor="product-purchase-date" className="block text-sm font-medium text-slate-700">Purchase date</label>
+              <input id="product-purchase-date" required type="date" value={form.purchaseDate} onChange={(e) => update('purchaseDate', e.target.value)} className="w-full rounded-xl border px-4 py-3" />
+            </div>
 
             <div className="space-y-2">
               <label
                 htmlFor="product-price"
                 className="block text-sm font-medium text-slate-700"
               >
-                Price
+                Selling price
               </label>
 
               <input
@@ -480,7 +462,7 @@ export default function ProductForm({
                 type="number"
                 min={0}
                 step="0.01"
-                placeholder="Price"
+                placeholder="Selling price"
                 value={form.price}
                 onWheel={(e) =>
                   e.currentTarget.blur()
@@ -501,8 +483,8 @@ export default function ProductForm({
                 className="block text-sm font-medium text-slate-700"
               >
                 {initialData
-                  ? 'Stock to add'
-                  : 'Stock'}
+                  ? 'Quantity to add'
+                  : 'Quantity'}
               </label>
 
               <input
@@ -513,8 +495,8 @@ export default function ProductForm({
                 step={1}
                 placeholder={
                   initialData
-                    ? 'Add stock'
-                    : 'Stock'
+                  ? 'Add quantity'
+                  : 'Quantity'
                 }
                 value={form.stock}
                 onWheel={(e) =>
@@ -536,19 +518,15 @@ export default function ProductForm({
               )}
             </div>
 
-            <input
-              placeholder="Category"
-              value={form.category ?? ''}
-              onChange={(e) =>
-                update(
-                  'category',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3"
-            />
+            <div className="space-y-2">
+              <label htmlFor="product-unit-cost" className="block text-sm font-medium text-slate-700">Unit cost</label>
+              <input id="product-unit-cost" required type="number" min={0} step="0.01" value={form.unitCost} onWheel={(e) => e.currentTarget.blur()} onChange={(e) => update('unitCost', Number(e.target.value))} className="w-full appearance-none rounded-xl border px-4 py-3" />
+            </div>
+
+            <input placeholder="Category" value={form.category ?? ''} onChange={(e) => update('category', e.target.value)} className="rounded-xl border px-4 py-3" />
 
             <select
+              aria-label="Product status"
               value={form.status}
               onChange={(e) =>
                 update(

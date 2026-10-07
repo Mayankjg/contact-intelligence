@@ -38,7 +38,6 @@ export interface FollowUp {
   product?: {
     id: string;
     name: string;
-    sku: string;
   };
 
   createdAt: string;

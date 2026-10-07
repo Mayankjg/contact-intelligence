@@ -45,7 +45,6 @@ export interface FollowUp {
 
     name: string;
 
-    sku: string;
   };
 
   createdAt: string;

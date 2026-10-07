@@ -33,7 +33,6 @@
 //               </th>
 
 //               <th className="px-5 py-4 text-left text-sm font-semibold">
-//                 SKU
 //               </th>
 
 //               <th className="px-5 py-4 text-left text-sm font-semibold">
@@ -74,7 +73,6 @@
 //                 </td>
 
 //                 <td className="px-5 py-4 text-sm text-slate-600">
-//                   {product.sku}
 //                 </td>
 
 //                 <td className="px-5 py-4 text-sm text-slate-600">
@@ -165,17 +163,19 @@ export default function ProductTable({
                 Product
               </th>
 
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">Supplier</th>
+
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">Purchase Date</th>
+
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
-                SKU
+                Quantity
               </th>
 
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
-                Price
+                Unit Cost
               </th>
 
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
-                Stock
-              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">Selling Price</th>
 
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
                 Status
@@ -189,10 +189,7 @@ export default function ProductTable({
 
           <tbody>
             {products.map((product) => {
-              const status =
-                product.stock > 0
-                  ? 'ACTIVE'
-                  : 'INACTIVE';
+              const status = product.status;
 
               return (
                 <tr
@@ -206,20 +203,27 @@ export default function ProductTable({
                   >
                     {product.name}
                   </Link>
+                  {product.description && <p className="mt-1 max-w-xs truncate text-xs text-slate-500">{product.description}</p>}
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-500">
-                  {product.sku}
+                  {product.supplierName || '—'}
                 </td>
 
-                <td className="px-6 py-4 text-sm font-medium">
-                  {formatCurrency(
-                    product.price,
-                  )}
+                <td className="px-6 py-4 text-sm text-slate-500">
+                  {product.purchaseDate ? new Date(`${product.purchaseDate.slice(0, 10)}T00:00:00`).toLocaleDateString('en-IN') : '—'}
                 </td>
 
                 <td className="px-6 py-4 text-sm">
                   {product.stock}
+                </td>
+
+                <td className="px-6 py-4 text-sm font-medium">
+                  {product.unitCost == null ? '—' : formatCurrency(product.unitCost)}
+                </td>
+
+                <td className="px-6 py-4 text-sm font-medium">
+                  {formatCurrency(product.price)}
                 </td>
 
                 <td className="px-6 py-4">

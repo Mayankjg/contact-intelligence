@@ -17,7 +17,6 @@
 
 //   @IsString()
 //   @Length(2, 50)
-//   sku!: string;
 
 //   @IsOptional()
 //   @IsString()
@@ -45,6 +44,7 @@
 
 import {
   IsEnum,
+  IsDateString,
   IsInt,
   IsNumber,
   IsOptional,
@@ -61,8 +61,15 @@ export class CreateProductDto {
   name!: string;
 
   @IsString()
-  @Length(2, 50)
-  sku!: string;
+  @Length(1, 200)
+  supplierName!: string;
+
+  @IsDateString()
+  purchaseDate!: string;
+
+  @IsNumber()
+  @Min(0)
+  unitCost!: number;
 
   @IsOptional()
   @IsString()

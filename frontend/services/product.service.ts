@@ -8,7 +8,6 @@
 // export interface CreateProductPayload {
 //   name: string;
 
-//   sku: string;
 
 //   description?: string;
 
@@ -187,7 +186,9 @@ export interface Product {
 
   name: string;
 
-  sku: string;
+  supplierName?: string | null;
+  purchaseDate?: string | null;
+  unitCost?: number | string | null;
 
   description?: string | null;
 
@@ -232,8 +233,9 @@ export interface ProductResponse {
 
 export interface CreateProductPayload {
   name: string;
-
-  sku: string;
+  supplierName: string;
+  purchaseDate: string;
+  unitCost: number;
 
   description?: string | null;
 

@@ -24,7 +24,6 @@ export interface StockMovement {
   product: {
     id: string;
     name: string;
-    sku: string;
   };
 }
 
@@ -56,7 +55,7 @@ export interface StockClosureResponse {
     id: string;
     startDate: string;
     endDate: string;
-    lines: Array<{ productId: string; productName: string; sku: string; opening: number; inward: number; outward: number; closing: number }>;
+    lines: Array<{ productId: string; productName: string; opening: number; inward: number; outward: number; closing: number }>;
   };
 }
 
@@ -65,7 +64,7 @@ export const stockService = {
     const query = new URLSearchParams(params);
     return apiRequest<{
       success: boolean;
-      product: { id: string; name: string; sku: string; stock: number };
+      product: { id: string; name: string; stock: number };
       data: StockDailyReportRow[];
     }>(`/stock/daily-report?${query.toString()}`);
   },

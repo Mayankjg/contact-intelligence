@@ -20,13 +20,11 @@
 //     const existing =
 //       await this.prisma.product.findUnique({
 //         where: {
-//           sku: dto.sku,
 //         },
 //       });
 
 //     if (existing) {
 //       throw new ConflictException(
-//         'Product SKU already exists',
 //       );
 //     }
 
@@ -34,7 +32,6 @@
 //       await this.prisma.product.create({
 //         data: {
 //           name: dto.name,
-//           sku: dto.sku,
 //           description: dto.description,
 //           price: dto.price,
 //           stock: dto.stock,
@@ -79,7 +76,6 @@
 //           },
 //         },
 //         {
-//           sku: {
 //             contains: query.search,
 //             mode: 'insensitive',
 //           },
@@ -143,11 +139,9 @@
 //   ) {
 //     await this.findById(id);
 
-//     if (dto.sku) {
 //       const duplicate =
 //         await this.prisma.product.findFirst({
 //           where: {
-//             sku: dto.sku,
 //             NOT: {
 //               id,
 //             },
@@ -156,7 +150,6 @@
 
 //       if (duplicate) {
 //         throw new ConflictException(
-//           'Product SKU already exists',
 //         );
 //       }
 //     }
@@ -205,7 +198,6 @@
 // }
 
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -226,29 +218,28 @@ import { ProductQueryDto } from './dto/product-query.dto';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateProductDto) {
-    const existing = await this.prisma.product.findUnique({
-      where: {
-        sku: dto.sku,
-      },
-    });
+  private purchaseDateTime(value?: string) {
+    return value
+      ? new Date(`${value.slice(0, 10)}T12:00:00.000+05:30`)
+      : new Date();
+  }
 
-    if (existing) {
-      throw new ConflictException('Product SKU already exists');
-    }
+  async create(dto: CreateProductDto) {
+    const purchaseDate = this.purchaseDateTime(dto.purchaseDate);
 
     const product = await this.prisma.$transaction(
       async (tx) => {
-        if (dto.stock > 0) await ensureStockPeriodOpen(tx, new Date());
+        if (dto.stock > 0) await ensureStockPeriodOpen(tx, purchaseDate);
         const created = await tx.product.create({
           data: {
             name: dto.name,
-            sku: dto.sku,
+            supplierName: dto.supplierName,
+            purchaseDate,
+            unitCost: dto.unitCost,
             description: dto.description,
             price: dto.price,
             stock: dto.stock,
-            status:
-              dto.stock > 0 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE,
+            status: dto.status ?? ProductStatus.ACTIVE,
             category: dto.category,
           },
         });
@@ -262,9 +253,11 @@ export class ProductsService {
               quantity: dto.stock,
               stockBefore: 0,
               stockAfter: dto.stock,
-              supplier: 'Opening Stock',
+              supplier: dto.supplierName,
+              unitPrice: dto.unitCost,
               warehouse: 'Main Warehouse',
-              notes: 'Opening stock',
+              notes: 'Initial product stock',
+              occurredAt: purchaseDate,
             },
           });
         }
@@ -303,12 +296,6 @@ export class ProductsService {
       where.OR = [
         {
           name: {
-            contains: query.search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          sku: {
             contains: query.search,
             mode: 'insensitive',
           },
@@ -382,35 +369,12 @@ export class ProductsService {
 
     const existing = existingResponse.data;
 
-    if (dto.sku) {
-      const duplicate = await this.prisma.product.findFirst({
-        where: {
-          sku: dto.sku,
-          deletedAt: null,
-
-          NOT: {
-            id,
-          },
-        },
-      });
-
-      if (duplicate) {
-        throw new ConflictException('Product SKU already exists');
-      }
-    }
-
     const stockToAdd = dto.stock;
-
-    const productData = {
-      ...dto,
-    };
-
-    delete productData.stock;
-    delete productData.status;
+    const { stock: _stock, purchaseDate, ...productData } = dto;
+    const stockDate = this.purchaseDateTime(purchaseDate);
 
     const product = await this.prisma.$transaction(
       async (tx) => {
-        const stockDate = new Date();
         if (stockToAdd !== undefined && stockToAdd > 0)
           await ensureStockPeriodOpen(tx, stockDate);
         const current = await tx.product.findUnique({ where: { id } });
@@ -423,6 +387,7 @@ export class ProductsService {
 
           data: {
             ...productData,
+            ...(purchaseDate ? { purchaseDate: stockDate } : {}),
             ...(stockToAdd === undefined
               ? {}
               : {
@@ -430,8 +395,6 @@ export class ProductsService {
                     increment: stockToAdd,
                   },
                 }),
-            status:
-              updatedStock > 0 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE,
           },
         });
 
@@ -445,9 +408,10 @@ export class ProductsService {
               quantity: stockToAdd,
               stockBefore: current.stock,
               stockAfter: updatedStock,
-              supplier: 'Stock Adjustment',
+              supplier: dto.supplierName || current.supplierName || undefined,
+              unitPrice: dto.unitCost ?? current.unitCost ?? undefined,
               warehouse: 'Main Warehouse',
-              notes: 'Stock added from product update',
+              notes: 'Stock added from product form',
               occurredAt: stockDate,
             },
           });

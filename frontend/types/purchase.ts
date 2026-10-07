@@ -12,7 +12,6 @@ export interface PurchaseItem {
   product: {
     id: string;
     name: string;
-    sku: string;
   };
 }
 

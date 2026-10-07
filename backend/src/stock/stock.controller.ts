@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 import { CreateStockClosureDto } from './dto/create-stock-closure.dto';
 import { ReopenStockPeriodDto } from './dto/reopen-stock-period.dto';
+import { StockDailyReportQueryDto } from './dto/stock-daily-report-query.dto';
 import { StockMovementQueryDto } from './dto/stock-movement-query.dto';
 import { StockService } from './stock.service';
 
@@ -32,5 +33,10 @@ export class StockController {
   @Get('movements')
   findMovements(@Query() query: StockMovementQueryDto) {
     return this.stockService.findMovements(query);
+  }
+
+  @Get('daily-report')
+  getDailyReport(@Query() query: StockDailyReportQueryDto) {
+    return this.stockService.getDailyReport(query);
   }
 }

@@ -39,6 +39,16 @@ export interface StockMovementListResponse {
   };
 }
 
+export interface StockDailyReportRow {
+  date: string;
+  productId: string;
+  productName: string;
+  opening: number;
+  inward: number;
+  outward: number;
+  closing: number;
+}
+
 export interface StockClosureResponse {
   success: boolean;
   alreadyClosed: boolean;
@@ -51,6 +61,15 @@ export interface StockClosureResponse {
 }
 
 export const stockService = {
+  async getDailyReport(params: { productId: string; startDate: string; endDate: string }) {
+    const query = new URLSearchParams(params);
+    return apiRequest<{
+      success: boolean;
+      product: { id: string; name: string; sku: string; stock: number };
+      data: StockDailyReportRow[];
+    }>(`/stock/daily-report?${query.toString()}`);
+  },
+
   async getMovements(params: {
     page: number;
     limit: number;

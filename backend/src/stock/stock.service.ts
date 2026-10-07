@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateStockMovementDto } from './dto/create-stock-movement.dto';
 import { CreateStockClosureDto } from './dto/create-stock-closure.dto';
 import { ReopenStockPeriodDto } from './dto/reopen-stock-period.dto';
+import { StockDailyReportQueryDto } from './dto/stock-daily-report-query.dto';
 import { StockMovementQueryDto } from './dto/stock-movement-query.dto';
 import { createStockDocumentNumber } from './stock-number';
 import { ensureStockPeriodOpen } from './stock-period';
@@ -163,6 +164,85 @@ export class StockService {
     };
   }
 
+  async getDailyReport(query: StockDailyReportQueryDto) {
+    const startDate = businessDayStart(query.startDate);
+    const endDate = businessDayEnd(query.endDate);
+    if (startDate > endDate) {
+      throw new BadRequestException('Start date must be before end date');
+    }
+
+    const product = await this.prisma.product.findFirst({
+      where: { id: query.productId, deletedAt: null },
+      select: { id: true, name: true, sku: true, stock: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const movements = await this.prisma.stockMovement.findMany({
+      where: { productId: product.id, occurredAt: { lte: endDate } },
+      orderBy: [{ occurredAt: 'asc' }, { createdAt: 'asc' }],
+      select: {
+        type: true,
+        quantity: true,
+        stockBefore: true,
+        stockAfter: true,
+        occurredAt: true,
+      },
+    });
+
+    const before = movements.filter((movement) => movement.occurredAt < startDate);
+    const during = movements.filter((movement) => movement.occurredAt >= startDate);
+    // Rebuild the balance from the movement ledger. stockBefore/stockAfter are
+    // transaction-time snapshots and can be misleading when entries are
+    // recorded later with an earlier business date.
+    const firstPriorMovementBalance = before[0]?.stockBefore ?? 0;
+    let opening = before.reduce(
+      (balance, movement) =>
+        balance +
+        (movement.type === StockMovementType.INWARD
+          ? movement.quantity
+          : -movement.quantity),
+      firstPriorMovementBalance,
+    );
+    const rows: Array<{
+      date: string;
+      productId: string;
+      productName: string;
+      opening: number;
+      inward: number;
+      outward: number;
+      closing: number;
+    }> = [];
+
+    for (
+      const day = new Date(`${query.startDate.slice(0, 10)}T00:00:00.000Z`),
+        lastDay = new Date(`${query.endDate.slice(0, 10)}T00:00:00.000Z`);
+      day <= lastDay;
+      day.setUTCDate(day.getUTCDate() + 1)
+    ) {
+      const date = day.toISOString().slice(0, 10);
+      const dayStart = businessDayStart(date);
+      const dayEnd = businessDayEnd(date);
+      const dayMovements = during.filter(
+        (movement) => movement.occurredAt >= dayStart && movement.occurredAt <= dayEnd,
+      );
+      const inward = dayMovements.reduce(
+        (sum, movement) => sum + (movement.type === StockMovementType.INWARD ? movement.quantity : 0),
+        0,
+      );
+      const outward = dayMovements.reduce(
+        (sum, movement) => sum + (movement.type === StockMovementType.OUTWARD ? movement.quantity : 0),
+        0,
+      );
+      const closing = opening + inward - outward;
+      rows.push({ date, productId: product.id, productName: product.name, opening, inward, outward, closing });
+      opening = closing;
+    }
+
+    return { success: true, product, data: rows };
+  }
+
   private async calculateClosureLines(
     tx: Prisma.TransactionClient,
     startDate: Date,
@@ -192,6 +272,9 @@ export class StockService {
 
     return products.map((product) => {
       const productMovements = movementsByProduct.get(product.id) ?? [];
+      const before = productMovements.filter(
+        (movement) => movement.occurredAt < startDate,
+      );
       const during = productMovements.filter(
         (movement) => movement.occurredAt >= startDate,
       );
@@ -207,14 +290,15 @@ export class StockService {
           (movement.type === StockMovementType.OUTWARD ? movement.quantity : 0),
         0,
       );
-      // Use the ledger's ending balance for this period, then derive opening
-      // from the period movements. This keeps opening + inward - outward
-      // reconciled with the actual closing balance even when older movement
-      // snapshots predate the selected report range.
-      const closing =
-        productMovements[productMovements.length - 1]?.stockAfter ??
-        product.stock;
-      const opening = closing - inward + outward;
+      const firstPriorMovementBalance = before[0]?.stockBefore ?? 0;
+      const opening = before.reduce(
+        (balance, movement) =>
+          balance +
+          (movement.type === StockMovementType.INWARD
+            ? movement.quantity
+            : -movement.quantity),
+        firstPriorMovementBalance,
+      );
       return {
         productId: product.id,
         productName: product.name,
@@ -222,7 +306,7 @@ export class StockService {
         opening,
         inward,
         outward,
-        closing,
+        closing: opening + inward - outward,
       };
     });
   }

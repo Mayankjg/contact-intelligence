@@ -1,329 +1,8 @@
-// 'use client';
-
-// import { useEffect, useState } from 'react';
-
-// import Link from 'next/link';
-
-// import { useRouter } from 'next/navigation';
-
-// import {
-//   CreateProductPayload,
-//   productService,
-// } from '@/services/product.service';
-
-// import { Product } from '@/types/product';
-
-// interface ProductFormProps {
-//   mode: 'create' | 'edit';
-
-//   product?: Product;
-// }
-
-// export default function ProductForm({
-//   mode,
-//   product,
-// }: ProductFormProps) {
-//   const router = useRouter();
-
-//   const [form, setForm] =
-//     useState<CreateProductPayload>({
-//       name: '',
-//       description: '',
-//       price: 0,
-//       stock: 0,
-//       status: 'ACTIVE',
-//       category: '',
-//     });
-
-//   const [loading, setLoading] =
-//     useState(false);
-
-//   const [error, setError] =
-//     useState('');
-
-//   useEffect(() => {
-//     if (!product) return;
-
-//     setForm({
-//       name: product.name,
-//       description:
-//         product.description || '',
-//       price: Number(product.price),
-//       stock: product.stock,
-//       status: product.status,
-//       category:
-//         product.category || '',
-//     });
-//   }, [product]);
-
-//   const updateField = <
-//     K extends keyof CreateProductPayload
-//   >(
-//     field: K,
-//     value: CreateProductPayload[K],
-//   ) => {
-//     setForm((previous) => ({
-//       ...previous,
-//       [field]: value,
-//     }));
-//   };
-
-//   const submit = async (
-//     event: React.FormEvent,
-//   ) => {
-//     event.preventDefault();
-
-//     setError('');
-
-//     if (!form.name.trim()) {
-//       setError('Product name is required');
-//       return;
-//     }
-
-//       return;
-//     }
-
-//     if (form.price < 0) {
-//       setError('Price cannot be negative');
-//       return;
-//     }
-
-//     if (form.stock < 0) {
-//       setError('Stock cannot be negative');
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-
-//       if (mode === 'create') {
-//         const response =
-//           await productService.createProduct(
-//             form,
-//           );
-
-//         router.push(
-//           `/products/${response.data.id}`,
-//         );
-//       } else {
-//         if (!product) return;
-
-//         const response =
-//           await productService.updateProduct(
-//             product.id,
-//             form,
-//           );
-
-//         router.push(
-//           `/products/${response.data.id}`,
-//         );
-//       }
-//     } catch (error) {
-//       setError(
-//         error instanceof Error
-//           ? error.message
-//           : 'Something went wrong',
-//       );
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <form
-//       onSubmit={submit}
-//       className="space-y-6"
-//     >
-//       {error && (
-//         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-//           {error}
-//         </div>
-//       )}
-
-//       <section className="rounded-xl bg-white p-6 shadow-sm">
-//         <h2 className="mb-5 text-lg font-semibold">
-//           Product Information
-//         </h2>
-
-//         <div className="grid gap-5 md:grid-cols-2">
-//           <Input
-//             label="Product Name"
-//             required
-//             value={form.name}
-//             onChange={(value) =>
-//               updateField('name', value)
-//             }
-//           />
-
-//           <Input
-//             required
-//             onChange={(value) =>
-//             }
-//           />
-
-//           <Input
-//             label="Category"
-//             value={form.category || ''}
-//             onChange={(value) =>
-//               updateField('category', value)
-//             }
-//           />
-
-//           <Input
-//             label="Price"
-//             type="number"
-//             min="0"
-//             value={String(form.price)}
-//             onChange={(value) =>
-//               updateField(
-//                 'price',
-//                 Number(value),
-//               )
-//             }
-//           />
-
-//           <Input
-//             label="Stock"
-//             type="number"
-//             min="0"
-//             value={String(form.stock)}
-//             onChange={(value) =>
-//               updateField(
-//                 'stock',
-//                 Number(value),
-//               )
-//             }
-//           />
-
-//           <div>
-//             <label className="mb-2 block text-sm font-medium text-slate-700">
-//               Status
-//             </label>
-
-//             <select
-//               value={form.status}
-//               onChange={(event) =>
-//                 updateField(
-//                   'status',
-//                   event.target.value as
-//                     | 'ACTIVE'
-//                     | 'INACTIVE',
-//                 )
-//               }
-//               className="w-full rounded-lg border border-slate-200 px-3 py-2.5 outline-none focus:border-indigo-500"
-//             >
-//               <option value="ACTIVE">
-//                 Active
-//               </option>
-
-//               <option value="INACTIVE">
-//                 Inactive
-//               </option>
-//             </select>
-//           </div>
-//         </div>
-//       </section>
-
-//       <section className="rounded-xl bg-white p-6 shadow-sm">
-//         <label className="mb-2 block text-sm font-medium text-slate-700">
-//           Description
-//         </label>
-
-//         <textarea
-//           rows={5}
-//           value={form.description || ''}
-//           onChange={(event) =>
-//             updateField(
-//               'description',
-//               event.target.value,
-//             )
-//           }
-//           placeholder="Enter product description..."
-//           className="w-full rounded-lg border border-slate-200 p-3 outline-none focus:border-indigo-500"
-//         />
-//       </section>
-
-//       <div className="flex justify-end gap-3">
-//         <Link
-//           href="/products"
-//           className="rounded-lg border border-slate-200 px-5 py-2.5"
-//         >
-//           Cancel
-//         </Link>
-
-//         <button
-//           type="submit"
-//           disabled={loading}
-//           className="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-//         >
-//           {loading
-//             ? 'Saving...'
-//             : mode === 'create'
-//               ? 'Create Product'
-//               : 'Update Product'}
-//         </button>
-//       </div>
-//     </form>
-//   );
-// }
-
-// function Input({
-//   label,
-//   value,
-//   onChange,
-//   type = 'text',
-//   min,
-//   required = false,
-// }: {
-//   label: string;
-//   value: string;
-//   onChange: (value: string) => void;
-//   type?: string;
-//   min?: string;
-//   required?: boolean;
-// }) {
-//   return (
-//     <div>
-//       <label className="mb-2 block text-sm font-medium text-slate-700">
-//         {label}
-
-//         {required && (
-//           <span className="ml-1 text-red-500">
-//             *
-//           </span>
-//         )}
-//       </label>
-
-//       <input
-//         type={type}
-//         min={min}
-//         value={value}
-//         required={required}
-//         onChange={(event) =>
-//           onChange(event.target.value)
-//         }
-//         className="w-full rounded-lg border border-slate-200 px-3 py-2.5 outline-none focus:border-indigo-500"
-//       />
-//     </div>
-//   );
-// }
-
-
-
-
 'use client';
 
-import {
-  useState,
-} from 'react';
-
-import {
-  X,
-} from 'lucide-react';
-
-import {
-  CreateProductPayload,
-} from '@/services/product.service';
+import { useState } from 'react';
+import { Plus, Trash2, X } from 'lucide-react';
+import { CreateProductPayload } from '@/services/product.service';
 import { stockService } from '@/services/stock.service';
 
 const localToday = () => {
@@ -331,223 +10,162 @@ const localToday = () => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+type ProductRow = {
+  id: number;
+  name: string;
+  purchaseDate: string;
+  stock: string;
+  unitCost: string;
+};
+
 interface ProductFormProps {
   initialData?: Partial<CreateProductPayload>;
-
-  onSubmit: (
-    data: CreateProductPayload,
-  ) => Promise<void>;
-
+  onSubmit: (data: CreateProductPayload | CreateProductPayload[]) => Promise<void>;
   onClose: () => void;
-
   loading?: boolean;
 }
 
-export default function ProductForm({
-  initialData,
-  onSubmit,
-  onClose,
-  loading,
-}: ProductFormProps) {
+const inputClass = 'w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400';
+
+export default function ProductForm({ initialData, onSubmit, onClose, loading }: ProductFormProps) {
+  const editing = Boolean(initialData);
+  const [supplierName, setSupplierName] = useState(initialData?.supplierName ?? '');
+  const [status, setStatus] = useState<CreateProductPayload['status']>(initialData?.status ?? 'ACTIVE');
+  const [description, setDescription] = useState(initialData?.description ?? '');
+  const [rows, setRows] = useState<ProductRow[]>([{
+    id: 1,
+    name: initialData?.name ?? '',
+    purchaseDate: initialData?.purchaseDate?.slice(0, 10) || localToday(),
+    stock: '0',
+    unitCost: String(initialData?.unitCost ?? 0),
+  }]);
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] =
-    useState<CreateProductPayload>({
-      name:
-        initialData?.name || '',
-      supplierName:
-        initialData?.supplierName || '',
-      purchaseDate:
-        initialData?.purchaseDate?.slice(0, 10) || localToday(),
-      unitCost:
-        Number(initialData?.unitCost || 0),
-      description:
-        initialData?.description || '',
-      price:
-        initialData?.price || 0,
-      // Product edits treat this field as an additive stock adjustment.
-      stock: 0,
-      status:
-        initialData?.status ||
-        'ACTIVE',
-      category:
-        initialData?.category || '',
-    });
 
-  const update = (
-    key: keyof CreateProductPayload,
-    value: string | number,
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const updateRow = (id: number, key: keyof Omit<ProductRow, 'id'>, value: string) => {
+    setRows((current) => current.map((row) => row.id === id ? { ...row, [key]: value } : row));
   };
 
-  const submit = async (
-    e: React.FormEvent,
-  ) => {
-    e.preventDefault();
+  const addRow = () => setRows((current) => [...current, {
+    id: Date.now() + Math.random(), name: '', purchaseDate: localToday(), stock: '0', unitCost: '0',
+  }]);
+
+  const save = async (payload: CreateProductPayload | CreateProductPayload[]) => {
+    try {
+      await onSubmit(payload);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Unable to save these products.';
+      if (!message.toLowerCase().includes('belongs to a closed period')) throw cause;
+      const payloads = Array.isArray(payload) ? payload : [payload];
+      let reopenedAnyPeriod = false;
+      for (const date of [...new Set(payloads.filter((item) => item.stock > 0).map((item) => item.purchaseDate))]) {
+        const reopened = await stockService.reopenPeriod(date);
+        reopenedAnyPeriod ||= reopened.reopened;
+      }
+      if (!reopenedAnyPeriod) throw cause;
+      await onSubmit(payload);
+    }
+  };
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (isSubmitting) return;
     setSubmitError('');
     setIsSubmitting(true);
+    const payloads = rows.map((row): CreateProductPayload => ({
+      name: row.name.trim(),
+      supplierName: supplierName.trim(),
+      purchaseDate: row.purchaseDate,
+      unitCost: Number(row.unitCost),
+      price: Number(initialData?.price ?? 0),
+      stock: Number(row.stock),
+      status,
+      description: description || undefined,
+      category: initialData?.category ?? undefined,
+    }));
     try {
-      await onSubmit(form);
+      await save(editing ? payloads[0] : payloads);
     } catch (cause) {
-      const message = cause instanceof Error
-        ? cause.message
-        : 'Unable to save this product.';
-      const closedPeriod = message.toLowerCase().includes('belongs to a closed period');
-      if (!closedPeriod) {
-        setSubmitError(message);
-      } else {
-        try {
-          const reopened = await stockService.reopenPeriod(form.purchaseDate);
-          if (!reopened.reopened) throw new Error(message);
-          await onSubmit(form);
-        } catch (retryCause) {
-          setSubmitError(retryCause instanceof Error
-            ? retryCause.message
-            : 'The stock period was reopened, but the product could not be saved.');
-        }
-      }
+      setSubmitError(cause instanceof Error ? cause.message : 'Unable to save these products.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b px-6 py-5">
-          <h2 className="font-semibold">
-            {initialData
-              ? 'Edit Product'
-              : 'Add Product'}
-          </h2>
+  const busy = loading || isSubmitting;
 
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 hover:bg-slate-100"
-          >
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-3 sm:p-5">
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="flex shrink-0 items-center justify-between border-b px-5 py-4 sm:px-6">
+          <div>
+            <h2 className="font-semibold text-slate-900">{editing ? 'Edit Product' : 'Add Products'}</h2>
+            {!editing && <p className="mt-1 text-sm text-slate-500">Add multiple products from one supplier in a single save.</p>}
+          </div>
+          <button type="button" onClick={onClose} disabled={busy} aria-label="Close" className="rounded-lg p-2 hover:bg-slate-100 disabled:opacity-50">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form
-          onSubmit={submit}
-          className="space-y-5 p-6"
-        >
-          {submitError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
-          <div className="grid gap-4 md:grid-cols-2">
-            <input required placeholder="Supplier name" value={form.supplierName} onChange={(e) => update('supplierName', e.target.value)} className="rounded-xl border px-4 py-3" />
-            <input required placeholder="Product name" value={form.name} onChange={(e) => update('name', e.target.value)} className="rounded-xl border px-4 py-3" />
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+          <div className="space-y-5 overflow-y-auto p-5 sm:p-6">
+            {submitError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
 
-            <div className="space-y-2">
-              <label htmlFor="product-purchase-date" className="block text-sm font-medium text-slate-700">Purchase date</label>
-              <input id="product-purchase-date" required type="date" value={form.purchaseDate} onChange={(e) => update('purchaseDate', e.target.value)} className="w-full rounded-xl border px-4 py-3" />
-            </div>
+            <label className="block space-y-2 text-sm font-medium text-slate-700">
+              Supplier name
+              <input required minLength={1} maxLength={200} autoFocus={!editing} value={supplierName} onChange={(event) => setSupplierName(event.target.value)} placeholder="Supplier name" className={inputClass} />
+            </label>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="product-stock"
-                className="block text-sm font-medium text-slate-700"
-              >
-                {initialData
-                  ? 'Quantity to add'
-                  : 'Quantity'}
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">Products</h3>
+                  <p className="text-xs text-slate-500">Enter the details for each product.</p>
+                </div>
+                {!editing && <button type="button" onClick={addRow} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"><Plus className="h-4 w-4" /> Add product</button>}
+              </div>
+
+              {rows.map((row, index) => (
+                <div key={row.id} className="rounded-xl border border-slate-200 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-700">Product {index + 1}</p>
+                    {!editing && rows.length > 1 && <button type="button" onClick={() => setRows((current) => current.filter((item) => item.id !== row.id))} aria-label={`Remove product ${index + 1}`} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <label className="space-y-1.5 text-xs font-medium text-slate-600 sm:col-span-2 lg:col-span-1">Product name
+                      <input required minLength={2} maxLength={150} value={row.name} onChange={(event) => updateRow(row.id, 'name', event.target.value)} placeholder="Product name" className={inputClass} />
+                    </label>
+                    <label className="space-y-1.5 text-xs font-medium text-slate-600">Purchase date
+                      <input required type="date" value={row.purchaseDate} onChange={(event) => updateRow(row.id, 'purchaseDate', event.target.value)} className={inputClass} />
+                    </label>
+                    <label className="space-y-1.5 text-xs font-medium text-slate-600">Quantity
+                      <input required type="number" min={0} step={1} value={row.stock} onChange={(event) => updateRow(row.id, 'stock', event.target.value)} className={inputClass} />
+                    </label>
+                    <label className="space-y-1.5 text-xs font-medium text-slate-600">Unit cost
+                      <input required type="number" min={0} step="0.01" value={row.unitCost} onChange={(event) => updateRow(row.id, 'unitCost', event.target.value)} className={inputClass} />
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block space-y-2 text-sm font-medium text-slate-700">Status
+                <select value={status} onChange={(event) => setStatus(event.target.value as CreateProductPayload['status'])} className={inputClass}>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                </select>
               </label>
-
-              <input
-                id="product-stock"
-                required
-                type="number"
-                min={0}
-                step={1}
-                placeholder={
-                  initialData
-                  ? 'Add quantity'
-                  : 'Quantity'
-                }
-                value={form.stock}
-                onWheel={(e) =>
-                  e.currentTarget.blur()
-                }
-                onChange={(e) =>
-                  update(
-                    'stock',
-                    Number(e.target.value),
-                  )
-                }
-                className="w-full appearance-none rounded-xl border px-4 py-3 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-
-              {initialData && (
-                <p className="text-xs text-slate-500">
-                  Current stock: {initialData.stock ?? 0}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="product-unit-cost" className="block text-sm font-medium text-slate-700">Unit cost</label>
-              <input id="product-unit-cost" required type="number" min={0} step="0.01" value={form.unitCost} onWheel={(e) => e.currentTarget.blur()} onChange={(e) => update('unitCost', Number(e.target.value))} className="w-full appearance-none rounded-xl border px-4 py-3" />
-            </div>
- 
- 
-            <div className="space-y-2">
-              <label htmlFor="product-status" className="block text-sm font-medium text-slate-700">Status</label>
-              <select
-                id="product-status"
-                value={form.status}
-                onChange={(e) =>
-                  update(
-                    'status',
-                    e.target.value,
-                  )
-                }
-                className="w-full rounded-xl border px-4 py-3"
-              >
-                <option value="ACTIVE">
-                  Active
-                </option>
-
-                <option value="INACTIVE">
-                  Inactive
-                </option>
-              </select>
+              <label className="block space-y-2 text-sm font-medium text-slate-700">Description <span className="font-normal text-slate-400">(optional, shared)</span>
+                <input value={description ?? ''} onChange={(event) => setDescription(event.target.value)} placeholder="Description" className={inputClass} />
+              </label>
             </div>
           </div>
 
-          <textarea
-            rows={4}
-            placeholder="Description"
-            value={form.description ?? ''}
-            onChange={(e) =>
-              update(
-                'description',
-                e.target.value,
-              )
-            }
-            className="w-full rounded-xl border px-4 py-3"
-          />
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border px-5 py-3"
-            >
-              Cancel
-            </button>
-
-            <button
-              disabled={loading || isSubmitting}
-              className="rounded-xl bg-slate-900 px-5 py-3 text-white"
-            >
-              {loading || isSubmitting
-                ? 'Saving...'
-                : 'Save Product'}
+          <div className="flex shrink-0 justify-end gap-3 border-t bg-white px-5 py-4 sm:px-6">
+            <button type="button" onClick={onClose} disabled={busy} className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:opacity-50">Cancel</button>
+            <button disabled={busy} className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+              {busy ? 'Saving…' : editing ? 'Save Product' : `Save ${rows.length} Product${rows.length === 1 ? '' : 's'}`}
             </button>
           </div>
         </form>

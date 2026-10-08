@@ -434,6 +434,7 @@ export default function ProductsPage() {
     loading,
     error,
     createProduct,
+    createProducts,
     updateProduct,
     deleteProduct,
   } = useProducts({
@@ -443,13 +444,17 @@ export default function ProductsPage() {
   });
 
   const submit = async (
-    data: CreateProductPayload,
+    data: CreateProductPayload | CreateProductPayload[],
   ) => {
     if (editingProduct) {
-      await updateProduct(
-        editingProduct.id,
-        data,
-      );
+      await updateProduct(editingProduct.id, data as CreateProductPayload);
+    } else if (Array.isArray(data)) {
+      const [first, ...rest] = data;
+      if (!first) return;
+      await createProducts({
+        supplierName: first.supplierName,
+        products: [first, ...rest].map(({ supplierName: _supplierName, ...product }) => product),
+      });
     } else {
       await createProduct(data);
     }

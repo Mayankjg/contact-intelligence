@@ -349,6 +349,19 @@ export const productService = {
     );
   },
 
+  async createProducts(data: {
+    supplierName: string;
+    products: Omit<CreateProductPayload, 'supplierName'>[];
+  }) {
+    return apiRequest<{ success: boolean; data: Product[] }>(
+      '/products/bulk',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    );
+  },
+
   async updateProduct(
     id: string,
     data: Partial<CreateProductPayload>,

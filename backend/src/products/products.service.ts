@@ -213,6 +213,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
+import { BulkCreateProductsDto } from './dto/bulk-create-products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -270,6 +271,54 @@ export class ProductsService {
       success: true,
       data: product,
     };
+  }
+
+  async createMany(dto: BulkCreateProductsDto) {
+    const products = await this.prisma.$transaction(
+      async (tx) => {
+        const createdProducts: Prisma.ProductGetPayload<object>[] = [];
+        for (const item of dto.products) {
+          const purchaseDate = this.purchaseDateTime(item.purchaseDate);
+          if (item.stock > 0) await ensureStockPeriodOpen(tx, purchaseDate);
+          const created = await tx.product.create({
+            data: {
+              name: item.name,
+              supplierName: dto.supplierName,
+              purchaseDate,
+              unitCost: item.unitCost,
+              description: item.description,
+              price: item.price,
+              stock: item.stock,
+              status: item.status ?? ProductStatus.ACTIVE,
+              category: item.category,
+            },
+          });
+          if (item.stock > 0) {
+            await tx.stockMovement.create({
+              data: {
+                documentNo: createStockDocumentNumber(StockMovementType.INWARD),
+                productId: created.id,
+                type: StockMovementType.INWARD,
+                status: StockMovementStatus.RECEIVED,
+                quantity: item.stock,
+                stockBefore: 0,
+                stockAfter: item.stock,
+                supplier: dto.supplierName,
+                unitPrice: item.unitCost,
+                warehouse: 'Main Warehouse',
+                notes: 'Initial product stock',
+                occurredAt: purchaseDate,
+              },
+            });
+          }
+          createdProducts.push(created);
+        }
+        return createdProducts;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+
+    return { success: true, data: products };
   }
 
   async findAll(query: ProductQueryDto) {

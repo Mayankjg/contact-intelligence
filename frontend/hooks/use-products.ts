@@ -83,6 +83,15 @@ export function useProducts(params?: {
     return response.data;
   };
 
+  const createProducts = async (data: {
+    supplierName: string;
+    products: Omit<CreateProductPayload, 'supplierName'>[];
+  }) => {
+    const response = await productService.createProducts(data);
+    await fetchProducts();
+    return response.data;
+  };
+
   const updateProduct = async (
     id: string,
     data: Partial<CreateProductPayload>,
@@ -113,6 +122,7 @@ export function useProducts(params?: {
     meta,
     refetch: fetchProducts,
     createProduct,
+    createProducts,
     updateProduct,
     deleteProduct,
   };

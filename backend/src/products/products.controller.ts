@@ -87,6 +87,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
+import { BulkCreateProductsDto } from './dto/bulk-create-products.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -99,6 +100,11 @@ export class ProductsController {
     @Body() dto: CreateProductDto,
   ) {
     return this.productsService.create(dto);
+  }
+
+  @Post('bulk')
+  createMany(@Body() dto: BulkCreateProductsDto) {
+    return this.productsService.createMany(dto);
   }
 
   @Get()

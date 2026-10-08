@@ -175,7 +175,7 @@ export default function ProductTable({
                 Unit Cost
               </th>
 
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">Selling Price</th>
+              {/* <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">Selling Price</th> */}
 
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
                 Status
@@ -222,9 +222,9 @@ export default function ProductTable({
                   {product.unitCost == null ? '—' : formatCurrency(product.unitCost)}
                 </td>
 
-                <td className="px-6 py-4 text-sm font-medium">
+                {/* <td className="px-6 py-4 text-sm font-medium">
                   {formatCurrency(product.price)}
-                </td>
+                </td> */}
 
                 <td className="px-6 py-4">
                   <span

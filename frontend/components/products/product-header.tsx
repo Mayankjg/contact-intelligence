@@ -44,7 +44,7 @@ export default function ProductHeader({
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <p className="text-sm text-slate-500">
             Selling Price
           </p>
@@ -55,7 +55,7 @@ export default function ProductHeader({
             )}
           </p>
           <p className="mt-2 text-xs text-slate-500">Unit cost: {product.unitCost == null ? '—' : formatCurrency(product.unitCost)}</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

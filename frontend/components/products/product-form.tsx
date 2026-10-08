@@ -450,35 +450,6 @@ export default function ProductForm({
 
             <div className="space-y-2">
               <label
-                htmlFor="product-price"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Selling price
-              </label>
-
-              <input
-                id="product-price"
-                required
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="Selling price"
-                value={form.price}
-                onWheel={(e) =>
-                  e.currentTarget.blur()
-                }
-                onChange={(e) =>
-                  update(
-                    'price',
-                    Number(e.target.value),
-                  )
-                }
-                className="w-full appearance-none rounded-xl border px-4 py-3 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
                 htmlFor="product-stock"
                 className="block text-sm font-medium text-slate-700"
               >
@@ -522,28 +493,30 @@ export default function ProductForm({
               <label htmlFor="product-unit-cost" className="block text-sm font-medium text-slate-700">Unit cost</label>
               <input id="product-unit-cost" required type="number" min={0} step="0.01" value={form.unitCost} onWheel={(e) => e.currentTarget.blur()} onChange={(e) => update('unitCost', Number(e.target.value))} className="w-full appearance-none rounded-xl border px-4 py-3" />
             </div>
+ 
+ 
+            <div className="space-y-2">
+              <label htmlFor="product-status" className="block text-sm font-medium text-slate-700">Status</label>
+              <select
+                id="product-status"
+                value={form.status}
+                onChange={(e) =>
+                  update(
+                    'status',
+                    e.target.value,
+                  )
+                }
+                className="w-full rounded-xl border px-4 py-3"
+              >
+                <option value="ACTIVE">
+                  Active
+                </option>
 
-            <input placeholder="Category" value={form.category ?? ''} onChange={(e) => update('category', e.target.value)} className="rounded-xl border px-4 py-3" />
-
-            <select
-              aria-label="Product status"
-              value={form.status}
-              onChange={(e) =>
-                update(
-                  'status',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3"
-            >
-              <option value="ACTIVE">
-                Active
-              </option>
-
-              <option value="INACTIVE">
-                Inactive
-              </option>
-            </select>
+                <option value="INACTIVE">
+                  Inactive
+                </option>
+              </select>
+            </div>
           </div>
 
           <textarea

@@ -120,7 +120,7 @@ export default function ProductForm({ initialData, onSubmit, onClose, loading }:
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Products</h3>
-                  <p className="text-xs text-slate-500">Enter the details for each product.</p>
+                  {/* <p className="text-xs text-slate-500">Enter the details for each product.</p> */}
                 </div>
                 {!editing && <button type="button" onClick={addRow} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"><Plus className="h-4 w-4" /> Add product</button>}
               </div>

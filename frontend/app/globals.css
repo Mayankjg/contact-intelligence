@@ -10,9 +10,15 @@
   --surface: #ffffff;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body { margin: 0; min-height: 100%; }
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
 
 body {
   background:
@@ -24,35 +30,114 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-::selection { background: rgba(91, 92, 226, .18); }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cfd6e3; border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background: #aab4c4; border: 2px solid transparent; background-clip: padding-box; }
+button {
+  cursor: pointer;
+}
 
-.app-main { width: min(100%, 1600px); margin-inline: auto; padding: 32px clamp(18px, 3vw, 48px) 56px; }
-.app-main > div { animation: page-enter .35s ease both; }
+::selection {
+  background: rgba(91, 92, 226, .18);
+}
 
-@keyframes page-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-main h1 { letter-spacing: -.045em; }
-main h2 { letter-spacing: -.025em; }
-.dashboard-export label { color: #e2e8f0; }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cfd6e3;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #aab4c4;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.app-main {
+  width: min(100%, 1600px);
+  margin-inline: auto;
+  padding: 32px clamp(18px, 3vw, 48px) 56px;
+}
+
+.app-main>div {
+  animation: page-enter .35s ease both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main h1 {
+  letter-spacing: -.045em;
+}
+
+main h2 {
+  letter-spacing: -.025em;
+}
+
+.dashboard-export label {
+  color: #e2e8f0;
+}
+
 main div[class*="rounded-2xl"][class*="border"][class*="bg-white"],
 main section[class*="rounded-2xl"][class*="border"][class*="bg-white"] {
   border-color: rgba(226, 232, 240, .82);
   box-shadow: 0 10px 32px -24px rgba(15, 23, 42, .32);
 }
 
-main button, main a[class*="rounded-xl"] { transition-duration: .18s; }
-main button:focus-visible, main a:focus-visible { outline: 3px solid rgba(99, 102, 241, .35); outline-offset: 2px; }
-main button[class*="bg-slate-900"] { background-color: #5657d9; box-shadow: 0 8px 18px -10px rgba(79, 70, 229, .65); }
-main button[class*="bg-slate-900"]:hover { background-color: #4546c7; transform: translateY(-1px); }
-main div.fixed.inset-0.z-50 { background-color: rgba(15, 23, 42, .55); backdrop-filter: blur(5px); }
-main div.fixed.inset-0.z-50 > div[class*="bg-white"] { border: 1px solid rgba(226, 232, 240, .8); border-radius: 22px; box-shadow: 0 32px 100px -38px rgba(2, 6, 23, .55); }
+main button,
+main a[class*="rounded-xl"] {
+  transition-duration: .18s;
+}
+
+main button:focus-visible,
+main a:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, .35);
+  outline-offset: 2px;
+}
+
+main button[class*="bg-slate-900"] {
+  background-color: #5657d9;
+  box-shadow: 0 8px 18px -10px rgba(79, 70, 229, .65);
+}
+
+main button[class*="bg-slate-900"]:hover {
+  background-color: #4546c7;
+  transform: translateY(-1px);
+}
+
+main div.fixed.inset-0.z-50 {
+  background-color: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(5px);
+}
+
+main div.fixed.inset-0.z-50>div[class*="bg-white"] {
+  border: 1px solid rgba(226, 232, 240, .8);
+  border-radius: 22px;
+  box-shadow: 0 32px 100px -38px rgba(2, 6, 23, .55);
+}
 
 main input:not([type="checkbox"]):not([type="radio"]),
 main select,
@@ -61,28 +146,86 @@ main textarea {
   border-radius: 12px;
   transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
-main input:focus, main select:focus, main textarea:focus {
+
+main input:focus,
+main select:focus,
+main textarea:focus {
   border-color: #7778ee;
   outline: 0;
   box-shadow: 0 0 0 4px rgba(91, 92, 226, .11);
 }
 
-main table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-main table thead { background: #f7f8fc; }
-main table thead th { color: #748096; font-size: 10px; letter-spacing: .075em; white-space: nowrap; }
-main table th, main table td { overflow: hidden; padding: 10px 12px; text-overflow: ellipsis; white-space: nowrap; }
-main table tbody td { font-size: 12px; }
-main table tbody tr { transition: background-color .16s ease; }
-main table tbody tr:hover { background-color: #f8f9fd; }
+main table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+main table thead {
+  background: #f7f8fc;
+}
+
+main table thead th {
+  color: #748096;
+  font-size: 12px;
+  letter-spacing: .075em;
+  white-space: nowrap;
+}
+
+main table th,
+main table td {
+  overflow: hidden;
+  padding: 10px 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+main table tbody td {
+  font-size: 13px;
+}
+
+main table tbody tr {
+  transition: background-color .16s ease;
+}
+
+main table tbody tr:hover {
+  background-color: #f8f9fd;
+}
 
 @media (max-width: 640px) {
-  .app-main { padding: 24px 16px 36px; }
+  .app-main {
+    padding: 24px 16px 36px;
+  }
 }
 
 @media print {
-  @page { size: A4; margin: 16mm; }
-  body * { visibility: hidden !important; }
-  #purchase-invoice, #purchase-invoice * { visibility: visible !important; }
-  #purchase-invoice { position: absolute; inset: 0 auto auto 0; width: 100%; max-width: none; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
-  .no-print, .invoice-download-hidden { display: none !important; }
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #purchase-invoice,
+  #purchase-invoice * {
+    visibility: visible !important;
+  }
+
+  #purchase-invoice {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .no-print,
+  .invoice-download-hidden {
+    display: none !important;
+  }
 }

@@ -20,6 +20,7 @@ export default function StockPage() {
   const [dailyReport, setDailyReport] = useState<StockDailyReportRow[] | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [error, setError] = useState('');
+  const newestFirstReport = [...(dailyReport ?? [])].sort((left, right) => right.date.localeCompare(left.date));
 
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
@@ -70,6 +71,10 @@ export default function StockPage() {
         <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Live inventory</div>
       </div>
       <div className="flex flex-wrap items-end gap-4 rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_10px_32px_-24px_rgba(15,23,42,.32)] sm:p-6">
+        <div className="w-full pb-1">
+          <h2 className="text-sm font-semibold text-slate-800">Report filters</h2>
+          <p className="mt-1 text-xs text-slate-500">Choose a product and date range to view daily stock.</p>
+        </div>
         <label className="text-sm font-medium text-slate-700">
           Product
           <select required value={reportProductId} onChange={(event) => setReportProductId(event.target.value)} disabled={loadingProducts} className={`${fieldClass} min-w-56`}>
@@ -78,11 +83,11 @@ export default function StockPage() {
           </select>
         </label>
         <label className="text-sm font-medium text-slate-700">
-          From
+          Date from
           <input required type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className={fieldClass} />
         </label>
         <label className="text-sm font-medium text-slate-700">
-          To
+          Date to
           <input required type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className={fieldClass} />
         </label>
       </div>
@@ -94,7 +99,7 @@ export default function StockPage() {
               <tr>{['Date', 'Product', 'Opening', 'Inward', 'Outward', 'Closing'].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {dailyReport.map((row) => (
+              {newestFirstReport.map((row) => (
                 <tr key={`${row.productId}-${row.date}`}>
                   <td className="px-4 py-3 text-slate-700">{new Date(`${row.date}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                   <td className="px-4 py-3 font-medium text-slate-900">{row.productName}</td>

@@ -15,13 +15,6 @@ function getActionDescription(endpoint: string) {
   if (endpoint.startsWith('/products')) return 'Product';
   if (endpoint.startsWith('/purchases')) return 'Purchase';
   if (endpoint.startsWith('/followups')) return 'Follow-up';
-  if (
-    endpoint.startsWith('/services') ||
-    endpoint.startsWith('/customer-services')
-  ) {
-    return 'Service';
-  }
-
   return 'Record';
 }
 

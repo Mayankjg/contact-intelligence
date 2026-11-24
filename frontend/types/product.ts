@@ -44,25 +44,6 @@
 
 
 
-export interface ProductService {
-  id: string;
-
-  productId: string;
-
-  name: string;
-
-  description?: string | null;
-
-  daysAfterPurchase: number;
-
-  durationMinutes?: number | null;
-
-  isActive: boolean;
-
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Product {
   id: string;
 
@@ -84,8 +65,6 @@ export interface Product {
 
   category?: string | null;
 
-  services?: ProductService[];
-
   createdAt: string;
   updatedAt: string;
 }
@@ -102,5 +81,3 @@ export interface ProductListResponse {
     totalPages: number;
   };
 }
-
-export type ProductServiceTemplate = ProductService;

@@ -6,8 +6,8 @@ import { SaleQueryDto } from './dto/sale-query.dto';
 
 /**
  * Sales is the seller-facing name for the existing Purchase domain.
- * We intentionally reuse PurchasesService so Contacts, Products,
- * Services and Follow-ups continue using the same database records.
+ * We intentionally reuse PurchasesService so sales and purchases
+ * continue using the same database records.
  */
 @Injectable()
 export class SalesService {

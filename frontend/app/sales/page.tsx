@@ -16,9 +16,9 @@ export default function SalesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-indigo-600">Sales Management</p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">Sales</h1>
-          <p className="mt-1 text-sm text-slate-500">Manage customer sales, products, services and follow-ups.</p>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[.16em] text-indigo-600">Revenue</p>
+          <h1 className="text-[32px] font-bold text-slate-950 sm:text-4xl">Sales</h1>
+          <p className="mt-1 text-sm text-slate-500">Manage customer sales, products and follow-ups.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={refetch} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"><RefreshCw className="h-4 w-4" /> Refresh</button>

@@ -17,7 +17,7 @@ export default function ProductHeader({
   product,
 }: ProductHeaderProps) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+    <div className="rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_36px_-28px_rgba(15,23,42,.35)] sm:p-7">
       <Link
         href="/products"
         className="mb-5 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
@@ -28,7 +28,7 @@ export default function ProductHeader({
 
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-700/20">
             <Package className="h-6 w-6" />
           </div>
 

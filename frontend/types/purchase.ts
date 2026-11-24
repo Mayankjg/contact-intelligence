@@ -39,7 +39,6 @@ export interface Purchase {
 
   items: PurchaseItem[];
 
-  services?: any[];
 
   createdAt: string;
   updatedAt: string;

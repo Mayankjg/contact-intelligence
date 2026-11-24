@@ -531,24 +531,21 @@ import {
 import {
   Users,
   Package,
-  CalendarClock,
   BellRing,
+  ArrowUpRight,
+  Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { contactService } from '@/services/contact.service';
-
-import { serviceService } from '@/services/service.service';
 
 import { followupService } from '@/services/followup.service';
 import { productService } from '@/services/product.service';
 import {
   getUpcomingFollowUps,
-  getUpcomingServices,
 } from '@/lib/notifications';
 
 import RecentContacts from '@/components/dashboard/recent-contacts';
-
-import UpcomingServices from '@/components/dashboard/upcoming-services';
 
 import UpcomingFollowUps from '@/components/dashboard/upcoming-followups';
 
@@ -557,9 +554,6 @@ import ExportReport from '@/components/dashboard/export-report';
 
 export default function DashboardPage() {
   const [contacts, setContacts] =
-    useState<any[]>([]);
-
-  const [services, setServices] =
     useState<any[]>([]);
 
   const [followUps, setFollowUps] =
@@ -581,11 +575,6 @@ export default function DashboardPage() {
             limit: 5,
           }),
 
-          serviceService.getServices({
-            page: 1,
-            limit: 100,
-          }),
-
           followupService.getFollowUps({
             status: 'PENDING',
             page: 1,
@@ -601,7 +590,6 @@ export default function DashboardPage() {
 
         const [
           contactResult,
-          serviceResult,
           followUpResult,
           productResult,
         ] = results;
@@ -609,14 +597,6 @@ export default function DashboardPage() {
         if (contactResult.status === 'fulfilled') {
           setContacts(contactResult.value.data);
           setContactCount(contactResult.value.meta.total);
-        }
-
-        if (serviceResult.status === 'fulfilled') {
-          setServices(
-            getUpcomingServices(
-              serviceResult.value.data,
-            ),
-          );
         }
 
         if (followUpResult.status === 'fulfilled') {
@@ -655,26 +635,25 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500">
-            Overview
-          </p>
-
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-            Dashboard
-          </h1>
-
-          <p className="mt-2 text-sm text-slate-500">
-            Manage your customers, products,
-            services and follow-ups.
-          </p>
+      <section className="relative isolate overflow-hidden rounded-[28px] bg-[#17233a] px-6 py-7 text-white shadow-[0_24px_60px_-35px_rgba(30,41,59,.65)] sm:px-9 sm:py-9">
+        <div className="pointer-events-none absolute -right-14 -top-32 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-[-130px] right-[23%] h-64 w-64 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.07] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[.14em] text-indigo-100">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300" /> Your workspace
+            </span>
+            <h1 className="mt-5 text-3xl font-semibold tracking-[-.045em] text-white sm:text-[40px]">A clearer view of your business.</h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300 sm:text-[15px]">Keep every customer, product and follow-up moving forward from one calm, organized workspace.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/contacts" className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-slate-900 shadow-lg shadow-black/10 transition hover:bg-indigo-50">Explore contacts <ArrowUpRight className="h-4 w-4" /></Link>
+            <div className="dashboard-export [&_button]:!border-white/15 [&_button]:!bg-white/10 [&_button]:!text-white [&_button]:hover:!bg-white/15"><ExportReport /></div>
+          </div>
         </div>
+      </section>
 
-        <ExportReport />
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           title="Total Contacts"
           value={contactCount}
@@ -690,13 +669,6 @@ export default function DashboardPage() {
         />
 
         <StatCard
-          title="Upcoming Services"
-          value={services.length}
-          description="Services requiring attention"
-          icon={CalendarClock}
-        />
-
-        <StatCard
           title="Pending Follow-ups"
           value={pendingFollowUpCount}
           description="Future customer purchases"
@@ -704,19 +676,10 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <RecentContacts
-          contacts={contacts}
-        />
-
-        <UpcomingServices
-          services={services}
-        />
+      <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+        <RecentContacts contacts={contacts} />
+        <UpcomingFollowUps followUps={followUps} />
       </div>
-
-      <UpcomingFollowUps
-        followUps={followUps}
-      />
     </div>
   );
 }

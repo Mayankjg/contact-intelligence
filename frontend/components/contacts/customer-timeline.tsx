@@ -2,7 +2,6 @@ import {
   Calendar,
   CheckCircle2,
   Package,
-  Wrench,
 } from 'lucide-react';
 
 import { formatDate } from '@/lib/utils';
@@ -12,7 +11,6 @@ interface TimelineItem {
 
   type:
     | 'PURCHASE'
-    | 'SERVICE'
     | 'FOLLOWUP';
 
   title: string;
@@ -54,9 +52,6 @@ export default function CustomerTimeline({
                 {item.type ===
                 'PURCHASE' ? (
                   <Package className="h-4 w-4" />
-                ) : item.type ===
-                  'SERVICE' ? (
-                  <Wrench className="h-4 w-4" />
                 ) : (
                   <Calendar className="h-4 w-4" />
                 )}

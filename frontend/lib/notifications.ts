@@ -1,12 +1,10 @@
 import type { FollowUp } from '@/services/followup.service';
-import type { CustomerService } from '@/services/service.service';
 import type { Contact } from '@/services/contact.service';
 import type { Product } from '@/services/product.service';
 
 export interface DashboardNotification {
   id: string;
   type:
-    | 'service'
     | 'followup'
     | 'reminder'
     | 'contact'
@@ -37,52 +35,6 @@ function getCustomerName(contact?: {
     .trim();
 
   return fullName || 'Unknown customer';
-}
-
-export function buildServiceNotifications(
-  services: CustomerService[],
-  reference = new Date(),
-): DashboardNotification[] {
-  return services
-    .filter(
-      (service) =>
-        service.status !== 'COMPLETED' &&
-        service.status !== 'CANCELLED',
-    )
-    .reduce<DashboardNotification[]>(
-      (notifications, service) => {
-      const due = isDue(
-        service.scheduledDate,
-        reference,
-      );
-
-      if (!due) {
-        return notifications;
-      }
-
-      const customerName = getCustomerName(
-        service.contact,
-      );
-      const productName =
-        service.productService?.product?.name;
-
-      notifications.push({
-        id: `service-${service.id}`,
-        type: 'service',
-        title: service.serviceName,
-        message: productName
-          ? `${customerName} has ${service.serviceName} scheduled for ${productName}.`
-          : `${customerName} has a ${service.serviceName} service scheduled.`,
-        customerName,
-        href: `/contacts/${service.contactId}`,
-        dueDate: service.scheduledDate,
-        isOverdue: new Date(service.scheduledDate).getTime() < reference.getTime(),
-      });
-
-      return notifications;
-    },
-    [],
-    );
 }
 
 export function buildFollowUpNotifications(
@@ -203,27 +155,6 @@ export function sortNotifications(
       );
     },
   );
-}
-
-export function getUpcomingServices(
-  services: CustomerService[],
-  limit = 5,
-) {
-  const now = new Date();
-
-  return [...services]
-    .filter(
-      (service) =>
-        service.status !== 'COMPLETED' &&
-        service.status !== 'CANCELLED' &&
-        new Date(service.scheduledDate).getTime() >= now.getTime(),
-    )
-    .sort(
-      (left, right) =>
-        new Date(left.scheduledDate).getTime() -
-        new Date(right.scheduledDate).getTime(),
-    )
-    .slice(0, limit);
 }
 
 export function getUpcomingFollowUps(

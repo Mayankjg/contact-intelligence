@@ -362,9 +362,6 @@ export class ProductsService {
           createdAt: 'desc',
         },
 
-        include: {
-          services: { where: { deletedAt: null } },
-        },
       }),
 
       this.prisma.product.count({
@@ -393,14 +390,6 @@ export class ProductsService {
         deletedAt: null,
       },
 
-      include: {
-        services: {
-          where: { deletedAt: null },
-          orderBy: {
-            daysAfterPurchase: 'asc',
-          },
-        },
-      },
     });
 
     if (!product) {

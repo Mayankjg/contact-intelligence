@@ -578,7 +578,7 @@ const menuItems = [
     icon: Users,
   },
   {
-    label: 'Purchase',
+    label: 'Products',
     href: '/products',
     icon: Package,
   },
@@ -607,30 +607,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     />
     <aside
       id="primary-navigation"
-      className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white transition-transform duration-200 ease-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`app-sidebar fixed inset-y-0 left-0 z-50 w-[272px] border-r border-slate-800/70 bg-[#111827] text-white transition-transform duration-200 ease-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       aria-label="Main navigation"
     >
       <div className="flex h-full flex-col">
-        <div className="border-b border-slate-200 px-6 py-5">
+        <div className="border-b border-white/[0.08] px-6 py-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-lg font-bold text-white">
-              CI
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400 to-violet-600 text-sm font-black text-white shadow-lg shadow-indigo-950/50">
+              <span className="tracking-tight">CI</span>
             </div>
 
             <div>
-              <h1 className="text-lg font-bold text-slate-900">
+              <h1 className="text-lg font-bold tracking-tight text-white">
                 ContactIQ
               </h1>
 
-              <p className="text-xs text-slate-500">
-                Customer Intelligence
+              <p className="mt-0.5 text-[11px] font-medium tracking-wide text-slate-400">
+                CUSTOMER INTELLIGENCE
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex-1 px-4 py-6">
-          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">
             Main Menu
           </p>
 
@@ -651,18 +651,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   href={item.href}
                   className={`group flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium transition ${
                     active
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-gradient-to-r from-indigo-500/25 to-violet-500/10 text-white ring-1 ring-inset ring-indigo-400/20 shadow-lg shadow-black/10'
+                      : 'text-slate-400 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
+                    <Icon className={`h-[18px] w-[18px] ${active ? 'text-indigo-300' : 'text-slate-500 group-hover:text-slate-300'}`} />
 
                     {item.label}
                   </span>
 
                   {active && (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 text-indigo-300" />
                   )}
                 </Link>
               );
@@ -670,15 +670,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
         </div>
 
-        <div className="border-t border-slate-200 p-4">
-          <div className="rounded-xl bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-900">
-              Customer Intelligence
+        <div className="border-t border-white/[0.08] p-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4">
+            <p className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.7)]" />
+              Workspace active
             </p>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Manage customers, products,
-              services and follow-ups.
+            <p className="mt-2 text-[11px] leading-5 text-slate-500">
+              Your customer operations, all in one place.
             </p>
           </div>
         </div>

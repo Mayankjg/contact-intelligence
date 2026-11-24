@@ -13,7 +13,7 @@ export default function SalesTable({ sales, onDelete }: { sales: Sale[]; onDelet
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[850px]">
+        <table className="w-full min-w-[850px] table-fixed">
           <thead className="border-b bg-slate-50">
             <tr>
               {['Sale', 'Customer', 'Products', 'Total', 'Status', 'Date', 'Action'].map((heading) => (

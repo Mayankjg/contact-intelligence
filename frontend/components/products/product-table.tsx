@@ -156,7 +156,7 @@ export default function ProductTable({
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[860px] table-fixed">
           <thead className="border-b bg-slate-50">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-slate-500">
@@ -199,11 +199,11 @@ export default function ProductTable({
                 <td className="px-6 py-4">
                   <Link
                     href={`/products/${product.id}`}
-                    className="font-semibold text-slate-900 hover:underline"
+                    title={product.description || product.name}
+                    className="block truncate font-semibold text-slate-900 hover:text-indigo-700"
                   >
                     {product.name}
                   </Link>
-                  {product.description && <p className="mt-1 max-w-xs truncate text-xs text-slate-500">{product.description}</p>}
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-500">
@@ -242,6 +242,8 @@ export default function ProductTable({
                   <div className="flex justify-end gap-2">
                     <Link
                       href={`/products/${product.id}`}
+                      aria-label={`View ${product.name}`}
+                      title="View product"
                       className="rounded-lg p-2 hover:bg-slate-100"
                     >
                       <Eye className="h-4 w-4" />
@@ -249,9 +251,12 @@ export default function ProductTable({
 
                     {onEdit && (
                       <button
+                        type="button"
                         onClick={() =>
                           onEdit(product)
                         }
+                        aria-label={`Edit ${product.name}`}
+                        title="Edit product"
                         className="rounded-lg p-2 hover:bg-slate-100"
                       >
                         <Pencil className="h-4 w-4" />
@@ -260,9 +265,12 @@ export default function ProductTable({
 
                     {onDelete && (
                       <button
+                        type="button"
                         onClick={() =>
                           onDelete(product)
                         }
+                        aria-label={`Remove ${product.name}`}
+                        title="Remove product"
                         className="rounded-lg p-2 text-red-500 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />

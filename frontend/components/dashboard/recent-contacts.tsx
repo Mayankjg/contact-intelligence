@@ -15,7 +15,7 @@ export default function RecentContacts({
 }: RecentContactsProps) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
         <div>
           <h2 className="font-semibold text-slate-900">
             Recent Contacts
@@ -28,7 +28,7 @@ export default function RecentContacts({
 
         <Link
           href="/contacts"
-          className="text-sm font-medium text-slate-700 hover:underline"
+          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50"
         >
           View all
         </Link>
@@ -46,7 +46,7 @@ export default function RecentContacts({
               href={`/contacts/${contact.id}`}
               className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-gradient-to-br from-indigo-50 to-violet-100 text-sm font-bold text-indigo-700 ring-1 ring-indigo-100">
                 {contact.firstName.charAt(
                   0,
                 )}

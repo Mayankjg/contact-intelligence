@@ -231,16 +231,10 @@ export interface ContactDetailsResponse {
     summary: {
       totalPurchases: number;
       totalProducts: number;
-      upcomingServices: number;
-      completedServices: number;
       pendingFollowUps: number;
     };
 
     purchases: any[];
-
-    upcomingServices: any[];
-
-    completedServices: any[];
 
     followUps: any[];
 

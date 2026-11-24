@@ -545,6 +545,8 @@
 
 'use client';
 
+import Link from 'next/link';
+
 import {
   useState,
 } from 'react';
@@ -622,28 +624,24 @@ export default function ContactsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Contacts
-          </h1>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[.16em] text-indigo-600">Relationships</p>
+          <h1 className="text-[32px] font-bold text-slate-950 sm:text-4xl">Contacts</h1>
 
           <p className="mt-1 text-sm text-slate-500">
             Manage customers and view their complete history.
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setEditingContact(null);
-            setShowForm(true);
-          }}
-          className="flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white"
+        <Link
+          href="/contacts/new"
+          className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/15 transition hover:-translate-y-0.5 hover:bg-indigo-700"
         >
           <Plus className="h-4 w-4" />
           Add Contact
-        </button>
+        </Link>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_4px_18px_-12px_rgba(15,23,42,.22)]">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 

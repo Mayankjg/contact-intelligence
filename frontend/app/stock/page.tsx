@@ -60,8 +60,16 @@ export default function StockPage() {
   }, [reportProductId, startDate, endDate]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
-      <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[.16em] text-indigo-600">Inventory</p>
+          <h1 className="text-[32px] font-bold text-slate-950 sm:text-4xl">Stock overview</h1>
+          <p className="mt-2 text-sm text-slate-500">Follow daily product movement and closing balances.</p>
+        </div>
+        <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Live inventory</div>
+      </div>
+      <div className="flex flex-wrap items-end gap-4 rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_10px_32px_-24px_rgba(15,23,42,.32)] sm:p-6">
         <label className="text-sm font-medium text-slate-700">
           Product
           <select required value={reportProductId} onChange={(event) => setReportProductId(event.target.value)} disabled={loadingProducts} className={`${fieldClass} min-w-56`}>
@@ -80,8 +88,8 @@ export default function StockPage() {
       </div>
 
       {dailyReport && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full min-w-[680px] text-left text-sm">
+        <div className="overflow-x-auto rounded-[22px] border border-slate-200/80 bg-white shadow-[0_10px_32px_-24px_rgba(15,23,42,.32)]">
+          <table className="w-full min-w-[680px] table-fixed text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>{['Date', 'Product', 'Opening', 'Inward', 'Outward', 'Closing'].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}</tr>
             </thead>

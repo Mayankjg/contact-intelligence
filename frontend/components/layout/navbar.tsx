@@ -147,12 +147,10 @@ import {
 } from 'react';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import {
   Bell,
-  Search,
-  CalendarClock,
   BellRing,
   MessageSquareMore,
   Package,
@@ -165,7 +163,6 @@ import {
 import {
   buildFollowUpNotifications,
   buildActivityNotifications,
-  buildServiceNotifications,
   type DashboardNotification,
   sortNotifications,
 } from '@/lib/notifications';
@@ -177,7 +174,6 @@ import {
 } from '@/lib/notification-events';
 import { formatDateTime } from '@/lib/utils';
 import { followupService } from '@/services/followup.service';
-import { serviceService } from '@/services/service.service';
 import { contactService } from '@/services/contact.service';
 import { productService } from '@/services/product.service';
 
@@ -189,6 +185,12 @@ export default function Navbar({
   onMenuClick: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const pageTitle = pathname === '/' ? 'Dashboard'
+    : pathname.startsWith('/contacts') ? 'Contacts'
+      : pathname.startsWith('/products') ? 'Products'
+        : pathname.startsWith('/sales') ? 'Sales'
+          : pathname.startsWith('/stock') ? 'Stock overview' : 'Workspace';
   const [isOpen, setIsOpen] =
     useState(false);
   const [userName, setUserName] =
@@ -202,11 +204,10 @@ export default function Navbar({
   const containerRef =
     useRef<HTMLDivElement>(null);
   const notificationDataRef = useRef<{
-    services: Awaited<ReturnType<typeof serviceService.getServices>>['data'];
     followUps: Awaited<ReturnType<typeof followupService.getFollowUps>>['data'];
     contacts: Awaited<ReturnType<typeof contactService.getContacts>>['data'];
     products: Awaited<ReturnType<typeof productService.getProducts>>['data'];
-  }>({ services: [], followUps: [], contacts: [], products: [] });
+  }>({ followUps: [], contacts: [], products: [] });
 
   useEffect(() => {
     const savedUser = window.localStorage.getItem('contactiq_user');
@@ -227,9 +228,8 @@ export default function Navbar({
   }
 
   const updateDueNotifications = useCallback(() => {
-    const { services, followUps, contacts, products } = notificationDataRef.current;
+    const { followUps, contacts, products } = notificationDataRef.current;
     const dueItems = sortNotifications([
-      ...buildServiceNotifications(services),
       ...buildFollowUpNotifications(followUps),
       ...buildActivityNotifications(contacts, products),
     ]);
@@ -261,15 +261,10 @@ export default function Navbar({
     async function loadNotifications() {
       try {
         const [
-          serviceResponse,
           followUpResponse,
           contactResponse,
           productResponse,
         ] = await Promise.all([
-          serviceService.getServices({
-            page: 1,
-            limit: 1000,
-          }),
           followupService.getFollowUps({
             status: 'PENDING',
             page: 1,
@@ -286,7 +281,6 @@ export default function Navbar({
         ]);
 
         notificationDataRef.current = {
-          services: serviceResponse.data,
           followUps: followUpResponse.data,
           contacts: contactResponse.data,
           products: productResponse.data,
@@ -386,10 +380,6 @@ export default function Navbar({
   function getNotificationIcon(
     type: string,
   ) {
-    if (type === 'service') {
-      return CalendarClock;
-    }
-
     if (type === 'reminder') {
       return BellRing;
     }
@@ -425,20 +415,21 @@ export default function Navbar({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="flex h-16 items-center justify-between px-4 lg:px-8">
+    <header className="app-navbar sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
+      <div className="flex h-[72px] items-center justify-between px-4 sm:px-6 lg:px-10">
         <button
           type="button"
           onClick={onMenuClick}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 lg:hidden"
           aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-controls="primary-navigation"
           aria-expanded={isMenuOpen}
         >
           <Menu className="h-6 w-6" />
         </button>
-        <div className="hidden text-sm text-slate-500 sm:block">
-          Customer Management
+        <div className="min-w-0">
+          <p className="hidden text-[10px] font-bold uppercase tracking-[.16em] text-slate-400 sm:block">ContactIQ workspace</p>
+          <p className="truncate text-sm font-semibold text-slate-800 sm:mt-0.5">{pageTitle}</p>
         </div>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-4">
@@ -456,10 +447,6 @@ export default function Navbar({
               <span>{latestAction.message}</span>
             </button>
           )}
-          <button className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
-            <Search className="h-5 w-5" />
-          </button>
-
           <div
             className="relative"
             ref={containerRef}
@@ -472,7 +459,7 @@ export default function Navbar({
                   void Notification.requestPermission();
                 }
               }}
-              className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-500 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
             >
               <Bell className="h-5 w-5" />
 
@@ -488,7 +475,7 @@ export default function Navbar({
             </button>
 
             {isOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="absolute right-0 top-14 z-50 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,.35)]">
                 <div className="border-b border-slate-100 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold text-slate-900">
@@ -586,7 +573,7 @@ export default function Navbar({
           </div>
 
           <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white ring-2 ring-white shadow-md shadow-indigo-900/15">
               {userName.charAt(0).toUpperCase()}
             </div>
 

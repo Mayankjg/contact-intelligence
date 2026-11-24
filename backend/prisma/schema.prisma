@@ -68,15 +68,6 @@ enum StockMovementStatus {
   DELIVERED
 }
 
-enum ServiceStatus {
-  PENDING
-  UPCOMING
-  DUE
-  COMPLETED
-  MISSED
-  CANCELLED
-}
-
 enum FollowUpStatus {
   PENDING
   COMPLETED
@@ -128,7 +119,6 @@ model Contact {
   owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
 
   purchases Purchase[]
-  services  CustomerService[]
   followUps PurchaseFollowUp[]
 
   createdAt DateTime @default(now())
@@ -158,7 +148,6 @@ model Product {
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
-  services       ProductService[]
   items          PurchaseItem[]
   stockMovements StockMovement[]
 }
@@ -215,33 +204,6 @@ model StockClosureLine {
   @@unique([closureId, productId])
 }
 
-model ProductService {
-  id String @id @default(cuid())
-
-  productId String
-
-  name String
-
-  description String?
-
-  daysAfterPurchase Int @default(0)
-
-  durationMinutes Int @default(30)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-
-  product          Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
-  customerServices CustomerService[]
-
-  @@index([productId])
-  @@index([isActive])
-}
-
 model Purchase {
   id             String   @id @default(cuid())
   purchaseNumber String   @unique
@@ -259,7 +221,6 @@ model Purchase {
   contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
   items     PurchaseItem[]
-  services  CustomerService[]
   followUps PurchaseFollowUp[]
 
   createdAt DateTime @default(now())
@@ -287,36 +248,6 @@ model PurchaseItem {
 
   @@index([purchaseId])
   @@index([productId])
-}
-
-model CustomerService {
-  id               String  @id @default(cuid())
-  contactId        String
-  purchaseId       String
-  productServiceId String?
-
-  serviceName String
-
-  scheduledDate DateTime
-  completedDate DateTime?
-
-  status ServiceStatus @default(PENDING)
-
-  notes String?
-
-  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
-
-  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-
-  productService ProductService? @relation(fields: [productServiceId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([contactId])
-  @@index([purchaseId])
-  @@index([scheduledDate])
-  @@index([status])
 }
 
 model PurchaseFollowUp {

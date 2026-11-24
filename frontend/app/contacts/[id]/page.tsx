@@ -543,10 +543,6 @@ import {
 } from '@/services/purchase.service';
 
 import {
-  serviceService,
-} from '@/services/service.service';
-
-import {
   followupService,
 } from '@/services/followup.service';
 
@@ -561,8 +557,6 @@ import ContactSummary from '@/components/contacts/contact-summary';
 import PurchaseHistory from '@/components/contacts/purchase-history';
 
 import PurchaseDialog from '@/components/contacts/purchase-dialog';
-
-import ServiceList from '@/components/contacts/service-list';
 
 import FollowUpList from '@/components/contacts/followup-list';
 
@@ -589,9 +583,6 @@ export default function ContactDetailsPage({
   const [purchases, setPurchases] =
     useState<any[]>([]);
 
-  const [services, setServices] =
-    useState<any[]>([]);
-
   const [followUps, setFollowUps] =
     useState<any[]>([]);
 
@@ -614,17 +605,12 @@ export default function ContactDetailsPage({
       const [
         contactResponse,
         purchaseResponse,
-        serviceResponse,
         followUpResponse,
         productResponse,
       ] = await Promise.all([
         contactService.getContact(id),
 
         purchaseService.getPurchases({
-          contactId: id,
-        }),
-
-        serviceService.getServices({
           contactId: id,
         }),
 
@@ -645,10 +631,6 @@ export default function ContactDetailsPage({
 
       setPurchases(
         purchaseResponse.data,
-      );
-
-      setServices(
-        serviceResponse.data,
       );
 
       setFollowUps(
@@ -688,16 +670,6 @@ export default function ContactDetailsPage({
     );
   }
 
-  const completeService = async (
-    service: any,
-  ) => {
-    await serviceService.completeService(
-      service.id,
-    );
-
-    await loadData();
-  };
-
   const completeFollowUp = async (
     followUp: any,
   ) => {
@@ -721,14 +693,6 @@ export default function ContactDetailsPage({
       description:
         purchase.purchaseNumber,
       date: purchase.purchaseDate,
-    })),
-
-    ...services.map((service) => ({
-      id: `service-${service.id}`,
-      type: 'SERVICE' as const,
-      title: service.serviceName,
-      description: service.status,
-      date: service.scheduledDate,
     })),
 
     ...followUps.map((followUp) => ({
@@ -762,15 +726,6 @@ export default function ContactDetailsPage({
               0),
           0,
         )}
-        upcomingServices={
-          services.filter(
-            (service) =>
-              service.status !==
-                'COMPLETED' &&
-              service.status !==
-                'CANCELLED',
-          ).length
-        }
         pendingFollowUps={
           followUps.filter(
             (item) =>
@@ -803,11 +758,6 @@ export default function ContactDetailsPage({
 
       <PurchaseHistory
         purchases={purchases}
-      />
-
-      <ServiceList
-        services={services}
-        onComplete={completeService}
       />
 
       <FollowUpList

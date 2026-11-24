@@ -25,7 +25,7 @@ export default function ContactHeader({
         : 'bg-emerald-50 text-emerald-700';
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="relative overflow-hidden rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_12px_36px_-28px_rgba(15,23,42,.35)] sm:p-7">
       <Link
         href="/contacts"
         className="mb-5 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
@@ -36,7 +36,7 @@ export default function ContactHeader({
 
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-gradient-to-br from-indigo-500 to-violet-600 text-lg font-bold text-white shadow-lg shadow-indigo-700/20">
             {getInitials(
               contact.firstName,
               contact.lastName,

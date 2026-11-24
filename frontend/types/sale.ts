@@ -33,7 +33,6 @@ export interface Sale {
     postalCode?: string | null;
   };
   items: SaleItem[];
-  services?: unknown[];
   followUps?: unknown[];
   createdAt: string;
   updatedAt: string;

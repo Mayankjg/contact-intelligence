@@ -534,22 +534,6 @@ export class ContactsService {
             },
           },
 
-          services: {
-            where: { purchase: { deletedAt: null } },
-            orderBy: {
-              scheduledDate: 'asc',
-            },
-
-            include: {
-              purchase: true,
-              productService: {
-                include: {
-                  product: true,
-                },
-              },
-            },
-          },
-
           followUps: {
             where: { deletedAt: null },
             orderBy: {
@@ -564,22 +548,6 @@ export class ContactsService {
         'Contact not found',
       );
     }
-
-    const upcomingServices =
-      contact.services.filter(
-        (service) =>
-          service.status !==
-            'COMPLETED' &&
-          service.status !==
-            'CANCELLED',
-      );
-
-    const completedServices =
-      contact.services.filter(
-        (service) =>
-          service.status ===
-          'COMPLETED',
-      );
 
     const pendingFollowUps =
       contact.followUps.filter(
@@ -620,20 +588,6 @@ export class ContactsService {
         }),
       ),
 
-      ...contact.services.map(
-        (service) => ({
-          type: 'SERVICE',
-          date:
-            service.scheduledDate,
-          title:
-            service.serviceName,
-          description:
-            service.status,
-          referenceId:
-            service.id,
-        }),
-      ),
-
       ...contact.followUps.map(
         (followUp) => ({
           type: 'FOLLOW_UP',
@@ -665,22 +619,12 @@ export class ContactsService {
 
           totalProducts,
 
-          upcomingServices:
-            upcomingServices.length,
-
-          completedServices:
-            completedServices.length,
-
           pendingFollowUps:
             pendingFollowUps.length,
         },
 
         purchases:
           contact.purchases,
-
-        upcomingServices,
-
-        completedServices,
 
         followUps:
           contact.followUps,

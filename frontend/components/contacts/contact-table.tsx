@@ -48,7 +48,7 @@ export default function ContactTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[760px] table-fixed">
           <thead className="border-b bg-slate-50">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -82,7 +82,7 @@ export default function ContactTable({
                 <td className="px-6 py-4">
                   <Link
                     href={`/contacts/${contact.id}`}
-                    className="flex items-center gap-3"
+                    className="flex min-w-0 items-center gap-3"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-700">
                       {contact.firstName.charAt(
@@ -93,14 +93,9 @@ export default function ContactTable({
                       )}
                     </div>
 
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {contact.firstName}{' '}
-                        {contact.lastName}
-                      </p>
-
-                      <p className="text-xs text-slate-500">
-                        {contact.email || '-'}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-slate-900" title={`${contact.firstName} ${contact.lastName}${contact.email ? ` · ${contact.email}` : ''}`}>
+                        {contact.firstName} {contact.lastName}{contact.email && <span className="font-normal text-slate-400"> · {contact.email}</span>}
                       </p>
                     </div>
                   </Link>
@@ -126,6 +121,8 @@ export default function ContactTable({
                   <div className="flex justify-end gap-2">
                     <Link
                       href={`/contacts/${contact.id}`}
+                      aria-label={`View ${contact.firstName} ${contact.lastName}`}
+                      title="View contact"
                       className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
                       <Eye className="h-4 w-4" />
@@ -133,9 +130,12 @@ export default function ContactTable({
 
                     {onEdit && (
                       <button
+                        type="button"
                         onClick={() =>
                           onEdit(contact)
                         }
+                        aria-label={`Edit ${contact.firstName} ${contact.lastName}`}
+                        title="Edit contact"
                         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
                       >
                         <Pencil className="h-4 w-4" />
@@ -144,9 +144,12 @@ export default function ContactTable({
 
                     {onDelete && (
                       <button
+                        type="button"
                         onClick={() =>
                           onDelete(contact)
                         }
+                        aria-label={`Remove ${contact.firstName} ${contact.lastName}`}
+                        title="Remove contact"
                         className="rounded-lg p-2 text-red-500 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />

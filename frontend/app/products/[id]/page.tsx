@@ -239,23 +239,12 @@ import {
 } from 'react';
 
 import {
-  Plus,
-} from 'lucide-react';
-
-import {
   productService,
 } from '@/services/product.service';
 
-import {
-  Product,
-  ProductServiceTemplate,
-} from '@/types/product';
+import { Product } from '@/types/product';
 
 import ProductHeader from '@/components/products/product-header';
-
-import ProductServiceList from '@/components/products/product-service-list';
-
-import ProductServiceDialog from '@/components/products/product-service-dialog';
 
 export default function ProductDetailsPage({
   params,
@@ -269,47 +258,19 @@ export default function ProductDetailsPage({
   const [product, setProduct] =
     useState<Product | null>(null);
 
-  const [services, setServices] =
-    useState<ProductServiceTemplate[]>(
-      [],
-    );
-
   const [loading, setLoading] =
     useState(true);
-
-  const [showDialog, setShowDialog] =
-    useState(false);
-
-  const [editingService, setEditingService] =
-    useState<ProductServiceTemplate | null>(
-      null,
-    );
-
-  const [actionError, setActionError] =
-    useState('');
 
   const loadData = async () => {
     try {
       setLoading(true);
 
-      const [
-        productResponse,
-        serviceResponse,
-      ] = await Promise.all([
-        productService.getProduct(id),
-
-        productService.getProductServices(
-          id,
-        ),
-      ]);
+      const productResponse = await productService.getProduct(id);
 
       setProduct(
         productResponse.data,
       );
 
-      setServices(
-        serviceResponse.data || [],
-      );
     } catch (error) {
       console.error(
         'Product error:',
@@ -340,131 +301,12 @@ export default function ProductDetailsPage({
     );
   }
 
-  const submitService = async (
-    data: any,
-  ) => {
-    try {
-      setActionError('');
-
-      if (editingService) {
-        await productService.updateProductService(
-          id,
-          editingService.id,
-          data,
-        );
-      } else {
-        await productService.createProductService(
-          id,
-          data,
-        );
-      }
-
-      setShowDialog(false);
-      setEditingService(null);
-      await loadData();
-    } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to save the service.',
-      );
-    }
-  };
-
-  const deleteService = async (
-    service: ProductServiceTemplate,
-  ) => {
-    const confirmed =
-      window.confirm(
-        `Remove ${service.name} from the project? The record will be kept in the database.`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      setActionError('');
-      await productService.deleteProductService(
-        id,
-        service.id,
-      );
-      await loadData();
-    } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to delete the service.',
-      );
-    }
-  };
-
   return (
     <div className="space-y-6">
       <ProductHeader
         product={product}
       />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">
-            Service Configuration
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Configure services that should be scheduled after this product is purchased.
-          </p>
-        </div>
-
-        <button
-          onClick={() => {
-            setEditingService(null);
-            setShowDialog(true);
-          }}
-          className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white"
-        >
-          <Plus className="h-4 w-4" />
-          Add Service
-        </button>
-      </div>
-
-      {actionError && (
-        <div
-          role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {actionError}
-        </div>
-      )}
-
-      <ProductServiceList
-        services={services}
-        onEdit={(service) => {
-          setEditingService(service);
-          setShowDialog(true);
-        }}
-        onDelete={deleteService}
-      />
-
-      {showDialog && (
-        <ProductServiceDialog
-          initialData={
-            editingService
-              ? {
-                  ...editingService,
-                  durationMinutes:
-                    editingService.durationMinutes ??
-                    undefined,
-                }
-              : undefined
-          }
-          onSubmit={submitService}
-          onClose={() => {
-            setShowDialog(false);
-            setEditingService(null);
-          }}
-        />
-      )}
     </div>
   );
 }

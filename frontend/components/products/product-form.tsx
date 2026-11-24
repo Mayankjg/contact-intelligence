@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Package, Plus, Trash2, X } from 'lucide-react';
 import { CreateProductPayload } from '@/services/product.service';
 import { stockService } from '@/services/stock.service';
 
@@ -20,15 +20,17 @@ type ProductRow = {
 
 interface ProductFormProps {
   initialData?: Partial<CreateProductPayload>;
+  presentation?: 'modal' | 'page';
   onSubmit: (data: CreateProductPayload | CreateProductPayload[]) => Promise<void>;
   onClose: () => void;
   loading?: boolean;
 }
 
-const inputClass = 'w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400';
+const inputClass = 'mt-1 block h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10';
 
-export default function ProductForm({ initialData, onSubmit, onClose, loading }: ProductFormProps) {
+export default function ProductForm({ initialData, presentation = 'modal', onSubmit, onClose, loading }: ProductFormProps) {
   const editing = Boolean(initialData);
+  const isPage = presentation === 'page';
   const [supplierName, setSupplierName] = useState(initialData?.supplierName ?? '');
   const [status, setStatus] = useState<CreateProductPayload['status']>(initialData?.status ?? 'ACTIVE');
   const [description, setDescription] = useState(initialData?.description ?? '');
@@ -95,25 +97,29 @@ export default function ProductForm({ initialData, onSubmit, onClose, loading }:
   const busy = loading || isSubmitting;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-3 sm:p-5">
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="flex shrink-0 items-center justify-between border-b px-5 py-4 sm:px-6">
-          <div>
-            <h2 className="font-semibold text-slate-900">{editing ? 'Edit Product' : 'Add Products'}</h2>
-            {!editing && <p className="mt-1 text-sm text-slate-500">Add multiple products from one supplier in a single save.</p>}
+    <div className={isPage ? 'w-full' : 'product-form-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6'}>
+      <section aria-labelledby="product-form-title" role={isPage ? undefined : 'dialog'} aria-modal={isPage ? undefined : true} className={`flex w-full flex-col overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_20px_60px_-38px_rgba(15,23,42,.32)] ${isPage ? 'mx-auto max-w-5xl' : 'max-h-[92vh] max-w-4xl border-white/70 shadow-2xl'}`}>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-cyan-50 via-white to-indigo-50 px-5 py-4 sm:px-7 sm:py-5">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg shadow-cyan-700/20"><Package className="h-5 w-5" /></span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-cyan-700">Inventory catalog</p>
+              <h2 id="product-form-title" className="mt-0.5 text-lg font-bold tracking-tight text-slate-950">{editing ? 'Edit product' : 'Add products'}</h2>
+              {/* {!editing && <p className="mt-0.5 text-xs text-slate-500">Group products from one supplier in a single save.</p>} */}
+            </div>
           </div>
-          <button type="button" onClick={onClose} disabled={busy} aria-label="Close" className="rounded-lg p-2 hover:bg-slate-100 disabled:opacity-50">
+          <button type="button" onClick={onClose} disabled={busy} aria-label="Close product form" className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50">
             <X className="h-5 w-5" />
           </button>
-        </div>
+        </header>
 
         <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
-          <div className="space-y-5 overflow-y-auto p-5 sm:p-6">
+          <div className={`space-y-5 p-5 sm:p-7 ${isPage ? '' : 'overflow-y-auto'}`}>
             {submitError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
 
             <label className="block space-y-2 text-sm font-medium text-slate-700">
               Supplier name
-              <input required minLength={1} maxLength={200} autoFocus={!editing} value={supplierName} onChange={(event) => setSupplierName(event.target.value)} placeholder="Supplier name" className={inputClass} />
+              <input required minLength={1} maxLength={200} autoFocus={!editing} value={supplierName} onChange={(event) => setSupplierName(event.target.value)} placeholder="Supplier name" className={`${inputClass} mt-2 h-11 max-w-xl`} />
             </label>
 
             <section className="space-y-3">
@@ -126,9 +132,9 @@ export default function ProductForm({ initialData, onSubmit, onClose, loading }:
               </div>
 
               {rows.map((row, index) => (
-                <div key={row.id} className="rounded-xl border border-slate-200 p-4">
+                <div key={row.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 sm:p-5">
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-slate-700">Product {index + 1}</p>
+                    <p className="text-xs font-bold uppercase tracking-[.1em] text-slate-500">Product {String(index + 1).padStart(2, '0')}</p>
                     {!editing && rows.length > 1 && <button type="button" onClick={() => setRows((current) => current.filter((item) => item.id !== row.id))} aria-label={`Remove product ${index + 1}`} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -162,14 +168,17 @@ export default function ProductForm({ initialData, onSubmit, onClose, loading }:
             </div>
           </div>
 
-          <div className="flex shrink-0 justify-end gap-3 border-t bg-white px-5 py-4 sm:px-6">
-            <button type="button" onClick={onClose} disabled={busy} className="rounded-xl border px-5 py-2.5 text-sm font-medium disabled:opacity-50">Cancel</button>
-            <button disabled={busy} className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+          <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-5 py-4 sm:px-7">
+            <p className="hidden text-xs text-slate-400 sm:block">{editing ? 'Your changes are saved to the catalog.' : `${rows.length} product${rows.length === 1 ? '' : 's'} ready to add`}</p>
+            <div className="ml-auto flex gap-2.5">
+            <button type="button" onClick={onClose} disabled={busy} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">Cancel</button>
+            <button disabled={busy} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/15 transition hover:bg-indigo-700 disabled:opacity-50">
               {busy ? 'Saving…' : editing ? 'Save Product' : `Save ${rows.length} Product${rows.length === 1 ? '' : 's'}`}
             </button>
-          </div>
+            </div>
+          </footer>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

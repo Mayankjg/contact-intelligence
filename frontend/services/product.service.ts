@@ -161,26 +161,6 @@
 
 import { apiRequest } from '@/lib/api';
 
-export interface ProductServiceTemplate {
-  id: string;
-
-  productId: string;
-
-  name: string;
-
-  description?: string | null;
-
-  daysAfterPurchase: number;
-
-  durationMinutes?: number | null;
-
-  isActive: boolean;
-
-  createdAt: string;
-
-  updatedAt: string;
-}
-
 export interface Product {
   id: string;
 
@@ -201,8 +181,6 @@ export interface Product {
     | 'INACTIVE';
 
   category?: string | null;
-
-  services?: ProductServiceTemplate[];
 
   createdAt: string;
 
@@ -260,18 +238,6 @@ export interface ProductQuery {
   page?: number;
 
   limit?: number;
-}
-
-export interface CreateProductServicePayload {
-  name: string;
-
-  description?: string | null;
-
-  daysAfterPurchase: number;
-
-  durationMinutes?: number;
-
-  isActive?: boolean;
 }
 
 export const productService = {
@@ -390,64 +356,4 @@ export const productService = {
     );
   },
 
-  async getProductServices(
-    productId: string,
-  ) {
-    return apiRequest<{
-      success: boolean;
-      data: ProductServiceTemplate[];
-    }>(
-      `/products/${productId}/services`,
-    );
-  },
-
-  async createProductService(
-    productId: string,
-    data: CreateProductServicePayload,
-  ) {
-    return apiRequest<{
-      success: boolean;
-      data: ProductServiceTemplate;
-    }>(
-      `/products/${productId}/services`,
-      {
-        method: 'POST',
-
-        body: JSON.stringify(data),
-      },
-    );
-  },
-
-  async updateProductService(
-    productId: string,
-    serviceId: string,
-    data: Partial<CreateProductServicePayload>,
-  ) {
-    return apiRequest<{
-      success: boolean;
-      data: ProductServiceTemplate;
-    }>(
-      `/products/${productId}/services/${serviceId}`,
-      {
-        method: 'PATCH',
-
-        body: JSON.stringify(data),
-      },
-    );
-  },
-
-  async deleteProductService(
-    productId: string,
-    serviceId: string,
-  ) {
-    return apiRequest<{
-      success: boolean;
-      message: string;
-    }>(
-      `/products/${productId}/services/${serviceId}`,
-      {
-        method: 'DELETE',
-      },
-    );
-  },
 };

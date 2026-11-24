@@ -60,13 +60,6 @@ export class PurchasesService {
         },
       },
 
-      include: {
-        services: {
-          where: {
-            isActive: true,
-          },
-        },
-      },
     });
 
     if (products.length !== uniqueProductIds.length) {
@@ -199,38 +192,6 @@ export class PurchasesService {
           });
         }
 
-        for (const item of dto.items) {
-          const product = products.find((p) => p.id === item.productId);
-
-          if (!product) {
-            continue;
-          }
-
-          for (const service of product.services) {
-            const scheduledDate = new Date(purchaseDate);
-
-            scheduledDate.setDate(
-              scheduledDate.getDate() + service.daysAfterPurchase,
-            );
-
-            await tx.customerService.create({
-              data: {
-                contactId: dto.contactId,
-
-                purchaseId: createdPurchase.id,
-
-                productServiceId: service.id,
-
-                serviceName: service.name,
-
-                scheduledDate,
-
-                status: 'PENDING',
-              },
-            });
-          }
-        }
-
         return createdPurchase;
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -297,11 +258,6 @@ export class PurchasesService {
             },
           },
 
-          services: {
-            orderBy: {
-              scheduledDate: 'asc',
-            },
-          },
         },
       }),
 
@@ -349,19 +305,6 @@ export class PurchasesService {
           },
         },
 
-        services: {
-          orderBy: {
-            scheduledDate: 'asc',
-          },
-
-          include: {
-            productService: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
 
         followUps: true,
       },

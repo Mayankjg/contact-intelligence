@@ -556,6 +556,7 @@ import {
 
 import {
   X,
+  UserRound,
 } from 'lucide-react';
 
 import {
@@ -564,6 +565,8 @@ import {
 
 interface ContactFormProps {
   initialData?: Partial<CreateContactPayload>;
+  presentation?: 'modal' | 'page';
+  error?: string;
 
   loading?: boolean;
 
@@ -576,6 +579,8 @@ interface ContactFormProps {
 
 export default function ContactForm({
   initialData,
+  presentation = 'modal',
+  error,
   loading,
   onSubmit,
   onClose,
@@ -632,189 +637,58 @@ export default function ContactForm({
     await onSubmit(form);
   };
 
+  const isPage = presentation === 'page';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b px-6 py-5">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              {initialData
-                ? 'Edit Contact'
-                : 'Add Contact'}
-            </h2>
+    <div className={isPage ? 'w-full' : 'contact-form-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6'}>
+      <section aria-labelledby="contact-form-title" role={isPage ? undefined : 'dialog'} aria-modal={isPage ? undefined : true} className={`flex w-full flex-col overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_20px_60px_-38px_rgba(15,23,42,.32)] ${isPage ? 'mx-auto max-w-4xl' : 'max-h-[92vh] max-w-3xl border-white/70 shadow-2xl'}`}>
+        <header className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 px-5 py-4 sm:px-7 sm:py-5">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"><UserRound className="h-5 w-5" /></span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[.16em] text-indigo-600">Customer profile</p>
+              <h2 id="contact-form-title" className="mt-0.5 text-lg font-bold tracking-tight text-slate-950">{initialData ? 'Edit contact' : 'Add a new contact'}</h2>
+              {/* <p className="mt-0.5 text-xs text-slate-500">Save the details your team needs to build the relationship.</p> */}
+            </div>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close contact form" className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"><X className="h-4 w-4" /></button>
+        </header>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Enter customer information.
-            </p>
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+          <div className="space-y-5 overflow-y-auto p-5 sm:p-7">
+            {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">Basic information</p>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">First name<input required autoFocus={!initialData} value={form.firstName} onChange={(e) => update('firstName', e.target.value)} placeholder="e.g. Aanya" className="block h-11 w-full px-3.5 text-sm font-normal text-slate-900 placeholder:font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">Last name<input required value={form.lastName} onChange={(e) => update('lastName', e.target.value)} placeholder="e.g. Shah" className="block h-11 w-full px-3.5 text-sm font-normal text-slate-900 placeholder:font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">Phone number<input required value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+91 98765 43210" className="block h-11 w-full px-3.5 text-sm font-normal text-slate-900 placeholder:font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">Email address<input type="email" value={form.email ?? ''} onChange={(e) => update('email', e.target.value)} placeholder="name@company.com" className="block h-11 w-full px-3.5 text-sm font-normal text-slate-900 placeholder:font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">Company<input value={form.company ?? ''} onChange={(e) => update('company', e.target.value)} placeholder="Company name (optional)" className="block h-11 w-full px-3.5 text-sm font-normal text-slate-900 placeholder:font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">Customer type<select value={form.customerType} onChange={(e) => update('customerType', e.target.value)} className="block h-11 w-full bg-white px-3.5 text-sm font-normal text-slate-900"><option value="INDIVIDUAL">Individual</option><option value="BUSINESS">Business</option></select></label>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-5">
+              <p className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">Location & notes</p>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">City<input value={form.city ?? ''} onChange={(e) => update('city', e.target.value)} placeholder="City" className="block h-11 w-full px-3.5 text-sm font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600">State<input value={form.state ?? ''} onChange={(e) => update('state', e.target.value)} placeholder="State" className="block h-11 w-full px-3.5 text-sm font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600 sm:col-span-2">Address<textarea rows={2} value={form.address ?? ''} onChange={(e) => update('address', e.target.value)} placeholder="Street, area, and any useful directions" className="block w-full resize-y px-3.5 py-3 text-sm font-normal" /></label>
+                <label className="space-y-1.5 text-xs font-semibold text-slate-600 sm:col-span-2">Private notes<textarea rows={2} value={form.notes ?? ''} onChange={(e) => update('notes', e.target.value)} placeholder="Context for your team (optional)" className="block w-full resize-y px-3.5 py-3 text-sm font-normal" /></label>
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 hover:bg-slate-100"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="space-y-6 p-6"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <input
-              required
-              placeholder="First name"
-              value={form.firstName}
-              onChange={(e) =>
-                update(
-                  'firstName',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none focus:border-slate-900"
-            />
-
-            <input
-              required
-              placeholder="Last name"
-              value={form.lastName}
-              onChange={(e) =>
-                update(
-                  'lastName',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none focus:border-slate-900"
-            />
-
-            <input
-              required
-              placeholder="Phone number"
-              value={form.phone}
-              onChange={(e) =>
-                update(
-                  'phone',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none focus:border-slate-900"
-            />
-
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email ?? ''}
-              onChange={(e) =>
-                update(
-                  'email',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none focus:border-slate-900"
-            />
-
-            <input
-              placeholder="Company"
-              value={form.company ?? ''}
-              onChange={(e) =>
-                update(
-                  'company',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none focus:border-slate-900"
-            />
-
-            <select
-              value={form.customerType}
-              onChange={(e) =>
-                update(
-                  'customerType',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none"
-            >
-              <option value="INDIVIDUAL">
-                Individual
-              </option>
-
-              <option value="BUSINESS">
-                Business
-              </option>
-            </select>
-
-            <input
-              placeholder="City"
-              value={form.city ?? ''}
-              onChange={(e) =>
-                update(
-                  'city',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none"
-            />
-
-            <input
-              placeholder="State"
-              value={form.state ?? ''}
-              onChange={(e) =>
-                update(
-                  'state',
-                  e.target.value,
-                )
-              }
-              className="rounded-xl border px-4 py-3 outline-none"
-            />
-          </div>
-
-          <textarea
-            placeholder="Address"
-            rows={3}
-            value={form.address ?? ''}
-            onChange={(e) =>
-              update(
-                'address',
-                e.target.value,
-              )
-            }
-            className="w-full rounded-xl border px-4 py-3 outline-none"
-          />
-
-          <textarea
-            placeholder="Notes"
-            rows={3}
-            value={form.notes ?? ''}
-            onChange={(e) =>
-              update(
-                'notes',
-                e.target.value,
-              )
-            }
-            className="w-full rounded-xl border px-4 py-3 outline-none"
-          />
-
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border px-5 py-3 text-sm font-medium"
-            >
-              Cancel
-            </button>
-
-            <button
-              disabled={loading}
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
-            >
-              {loading
-                ? 'Saving...'
-                : 'Save Contact'}
-            </button>
-          </div>
+          <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-5 py-4 sm:px-7">
+            <p className="hidden text-xs text-slate-400 sm:block"><span className="text-rose-500">*</span> Required fields</p>
+            <div className="ml-auto flex gap-2.5">
+              <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</button>
+              <button disabled={loading} className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/15 transition hover:bg-indigo-700 disabled:opacity-50">{loading ? 'Saving…' : initialData ? 'Save changes' : 'Create contact'}</button>
+            </div>
+          </footer>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

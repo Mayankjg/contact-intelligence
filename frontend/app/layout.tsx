@@ -83,7 +83,7 @@ export const metadata: Metadata = {
   title:
     'ContactIQ - Customer Intelligence',
   description:
-    'Manage customers, products, services and follow-ups.',
+    'Manage customers, products and follow-ups.',
 };
 
 export default function RootLayout({

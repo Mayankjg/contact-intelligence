@@ -71,7 +71,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           <div className="relative my-auto max-w-md">
             <span className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10"><Sparkles className="h-6 w-6 text-cyan-200" /></span>
             <h1 className="text-4xl font-semibold leading-tight tracking-tight">The clear view of every customer relationship.</h1>
-            <p className="mt-5 text-base leading-7 text-slate-300">Bring contacts, purchases, services, and follow-ups into one focused workspace built for your team.</p>
+            <p className="mt-5 text-base leading-7 text-slate-300">Bring contacts, purchases, and follow-ups into one focused workspace built for your team.</p>
           </div>
           <p className="relative text-sm text-slate-400">Secure access for your customer operations team.</p>
         </section>

@@ -529,10 +529,11 @@ import {
 } from 'react';
 
 import {
-  Plus,
   ShoppingBag,
   BellRing,
 } from 'lucide-react';
+
+import Link from 'next/link';
 
 import {
   contactService,
@@ -546,27 +547,17 @@ import {
   followupService,
 } from '@/services/followup.service';
 
-import {
-  productService,
-} from '@/services/product.service';
-
 import ContactHeader from '@/components/contacts/contact-header';
 
 import ContactSummary from '@/components/contacts/contact-summary';
 
 import PurchaseHistory from '@/components/contacts/purchase-history';
 
-import PurchaseDialog from '@/components/contacts/purchase-dialog';
-
 import FollowUpList from '@/components/contacts/followup-list';
-
-import FollowUpDialog from '@/components/contacts/followup-dialog';
 
 import CustomerTimeline from '@/components/contacts/customer-timeline';
 
 import { Contact } from '@/types/contact';
-
-import { Product } from '@/types/product';
 
 export default function ContactDetailsPage({
   params,
@@ -586,17 +577,8 @@ export default function ContactDetailsPage({
   const [followUps, setFollowUps] =
     useState<any[]>([]);
 
-  const [products, setProducts] =
-    useState<Product[]>([]);
-
   const [loading, setLoading] =
     useState(true);
-
-  const [showPurchaseDialog, setShowPurchaseDialog] =
-    useState(false);
-
-  const [showFollowUpDialog, setShowFollowUpDialog] =
-    useState(false);
 
   async function loadData() {
     try {
@@ -606,7 +588,6 @@ export default function ContactDetailsPage({
         contactResponse,
         purchaseResponse,
         followUpResponse,
-        productResponse,
       ] = await Promise.all([
         contactService.getContact(id),
 
@@ -616,12 +597,6 @@ export default function ContactDetailsPage({
 
         followupService.getFollowUps({
           contactId: id,
-        }),
-
-        productService.getProducts({
-          page: 1,
-          limit: 100,
-          status: 'ACTIVE',
         }),
       ]);
 
@@ -637,9 +612,6 @@ export default function ContactDetailsPage({
         followUpResponse.data,
       );
 
-      setProducts(
-        productResponse.data,
-      );
     } catch (error) {
       console.error(
         'Contact details error:',
@@ -735,25 +707,21 @@ export default function ContactDetailsPage({
       />
 
       <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() =>
-            setShowPurchaseDialog(true)
-          }
+        <Link
+          href={`/contacts/${id}/purchase/new`}
           className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white"
         >
           <ShoppingBag className="h-4 w-4" />
           Add Purchase
-        </button>
+        </Link>
 
-        <button
-          onClick={() =>
-            setShowFollowUpDialog(true)
-          }
+        <Link
+          href={`/contacts/${id}/follow-up/new`}
           className="flex items-center gap-2 rounded-xl border bg-white px-5 py-3 text-sm font-semibold text-slate-700"
         >
           <BellRing className="h-4 w-4" />
           Add Follow-up
-        </button>
+        </Link>
       </div>
 
       <PurchaseHistory
@@ -769,38 +737,6 @@ export default function ContactDetailsPage({
         items={timeline}
       />
 
-      {showPurchaseDialog && (
-        <PurchaseDialog
-          contactId={id}
-          products={products}
-          onSubmit={async (data) => {
-            await purchaseService.createPurchase(
-              data,
-            );
-
-            await loadData();
-          }}
-          onClose={() =>
-            setShowPurchaseDialog(false)
-          }
-        />
-      )}
-
-      {showFollowUpDialog && (
-        <FollowUpDialog
-          contactId={id}
-          onSubmit={async (data) => {
-            await followupService.createFollowUp(
-              data,
-            );
-
-            await loadData();
-          }}
-          onClose={() =>
-            setShowFollowUpDialog(false)
-          }
-        />
-      )}
     </div>
   );
 }

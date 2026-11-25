@@ -20,12 +20,14 @@ interface FollowUpDialogProps {
   ) => Promise<void>;
 
   onClose: () => void;
+  presentation?: 'dialog' | 'page';
 }
 
 export default function FollowUpDialog({
   contactId,
   onSubmit,
   onClose,
+  presentation = 'dialog',
 }: FollowUpDialogProps) {
   const [title, setTitle] =
     useState('');
@@ -69,8 +71,8 @@ export default function FollowUpDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+    <div className={presentation === 'page' ? 'w-full' : 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4'}>
+      <div className={`w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-sm ${presentation === 'dialog' ? 'shadow-xl' : ''}`}>
         <div className="flex items-center justify-between border-b px-6 py-5">
           <h2 className="font-semibold text-slate-900">
             Add Product Follow-up
